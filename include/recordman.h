@@ -3,6 +3,7 @@
 #include "fileio/FileManager.h"
 #include "utils/pagedef.h"
 
+#include <vector>
 #include <functional>
 
 namespace SimpleDataBase
@@ -18,19 +19,13 @@ struct	RecordPos
 		pageID(pageID), slotID(slotID) {}
 };
 
-class	RecordMananger
+class	RecordManager
 {
 public:
 	static	const	ushort	FILE_STEP = 65520u;
 
-	RecordManager() = delete;
-
-	inline	RecordManager(
-			FileManager* fileManager
-			BufPageManager* bufManager):
-		fileManager(fileManager),
-		bufManager(bufManager)
-	{}
+	RecordManager();
+	~RecordManager();
 
 	bool	createFile(std::string fileName);
 	bool	removeFile(std::string fileName);

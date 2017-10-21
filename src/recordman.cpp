@@ -4,6 +4,20 @@
 namespace	SimpleDataBase
 {
 
+RecordManager::RecordManager()
+{
+	MyBitMap::initConst();
+	fileManager = new FileManager();
+	bufMananger = new BufPageManager(fm);
+}
+
+RecordManager::~RecordManager()
+{
+	bufManager->close();
+	delete bufManager;
+	delete fileManager;
+}
+
 bool	RecordManager::createFile(std::string fileName)
 {
 	if (!fileManager->createFile(fileName)) return false;
