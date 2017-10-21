@@ -23,8 +23,8 @@
 	Slot page:
 		Page that store slots of real data.
 		The indexes starts from back while slots of real data starts from front.
-		Each index occupies an unsigned short, and represents the END of a slot.
-		An index with value 65535 means removed.
+		Each index occupies an unsigned short, and represents the END of a slot (in bytes, not bit).
+		An index with value 65535(-1) means removed.
 		The last unsigned short (i.e. bit 65520..65535) represents the length of index.
 		We need extra 16 bit to store a slot.
 		When we definitely REMOVE a slot or CHANGE ITS LENGTH, all the slots after it needs shifting, as well as indexes.
