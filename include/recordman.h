@@ -12,10 +12,10 @@ namespace SimpleDataBase
 struct	RecordPos
 {
 	size_t pageID;
-	ushort slotID;
+	short slotID;
 
 	RecordPos() = default;
-	RecordPos(int pageID, ushort slotID):
+	RecordPos(int pageID, short slotID):
 		pageID(pageID), slotID(slotID) {}
 };
 
@@ -23,7 +23,7 @@ class	RecordManager
 {
 public:
 	static	const	ushort	FILE_STEP = 65520u;
-	static	const	ushort	PAGE_SSIZE = PAGE_SIZE >> 1;
+	static	const	short	PAGE_SSIZE = PAGE_SIZE >> 1;
 
 	RecordManager();
 	~RecordManager();
@@ -49,8 +49,8 @@ private:
 	BufPageManager* bufManager;
 	FileManager* fileManager;
 
-	ushort	_pageInsert(int fileID, int pageID, void const* objptr, size_t size);
-	std::vector<RecordPos>	_pageSelect(int fileID, int pageID, std::function<bool(void const*)> const& fun);
+	short	_pageInsert(int fileID, int pageID, void const* objptr, size_t size);
+	std::vector<short>	_pageSelect(int fileID, int pageID, std::function<bool(void const*)> const& fun);
 };
 
 }	// end namespace SimpleDataBase

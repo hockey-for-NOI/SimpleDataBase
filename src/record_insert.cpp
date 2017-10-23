@@ -4,24 +4,26 @@
 namespace	SimpleDataBase
 {
 
-ushort	RecordManager::_pageInsert(int fileID, int pageID, void const* objptr, size_t size)
+short	RecordManager::_pageInsert(int fileID, int pageID, void const* objptr, size_t size)
 {
 	int bufIndex;
-	ushort* b = (ushort*)(bufManager->getPage(fileID, pageID, bufIndex));
-	ushort &indexnum = b[PAGE_SSIZE - 1];
-	ushort tail = b[PAGE_SSIZE - indexnum - 1];
-	if (tail + size + indexnum + 1 < PAGE_SIZE)
+	uchar* b = (uchar*)(bufManager->getPage(fileID, pageID, bufIndex));
+	short* sb = (short*)b;
+	short &indexnum = sb[PAGE_SSIZE - 2];
+	short &tail = sb[PAGE_SSIZE - 1];
+	if (tail + size + (indexnum << 1) + 4 <= PAGE_SIZE)
 	{
-		b[PAGE_SSIZE - (++indexnum) - 1] = tail + size;
-		memcpy(((uchar*)b) + tail, objptr, size);
+		sb[PAGE_SSIZE - (++indexnum) - 2] = tail;
+		memcpy(b + tail, objptr, size);
+		tail += size;
 		bufManager->markDirty(bufIndex);
 		return indexnum - 1;
-	} else return 65535u;
+	} else return -1;
 }
 
 RecordPos	RecordManager::insert(int fileID, void const* objptr, size_t size)
 {
-	if (size > PAGE_SIZE - 2) return RecordPos(0, 0);
+	if (size > PAGE_SIZE - 6) return RecordPos(0, 0);
 	bool flag = (size + 2 < PAGE_SSIZE);
 	// Try to find a slot in existing pages if it's not so big
 	
@@ -39,8 +41,8 @@ RecordPos	RecordManager::insert(int fileID, void const* objptr, size_t size)
 				for (ushort bit_index=0; (!(bit_index & 16)) && (byte_index << 4 | bit_index)<pagenum; bit_index++)
 					if (!(b[byte_index] & (1 << bit_index)))
 					{
-						ushort slotID = _pageInsert(fileID, pageID + (byte_index << 4 | bit_index) + 1, objptr, size);
-						if (slotID != 65535u)
+						short slotID = _pageInsert(fileID, pageID + (byte_index << 4 | bit_index) + 1, objptr, size);
+						if (slotID != -1)
 							return RecordPos(pageID + (byte_index << 4 | bit_index) + 1, slotID);
 						else
 						{

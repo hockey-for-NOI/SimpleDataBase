@@ -7,19 +7,19 @@ using namespace SimpleDataBase;
 struct	RecordA
 {
 	uchar data[1000];
-	RecordA() {memset(data, 'A', sizeof(data));}
+	RecordA() {memset(data, 'A', sizeof(data)); ((ushort*)data)[0] = 1000;}
 };
 
 struct	RecordB
 {
 	uchar data[500];
-	RecordB() {memset(data, 'B', sizeof(data));}
+	RecordB() {memset(data, 'B', sizeof(data)); ((ushort*)data)[0] = 500;}
 };
 
 struct	RecordC
 {
-	uchar data[8190];
-	RecordC() {memset(data, 'C', sizeof(data));}
+	uchar data[8186];
+	RecordC() {memset(data, 'C', sizeof(data)); ((ushort*)data)[0] = 8186;}
 };
 
 int	main()

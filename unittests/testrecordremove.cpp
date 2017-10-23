@@ -7,19 +7,19 @@ using namespace SimpleDataBase;
 struct	RecordA
 {
 	uchar data[1000];
-	RecordA() {memset(data, 'A', sizeof(data));}
+	RecordA() {memset(data, 'A', sizeof(data)); ((ushort*)data)[0] = 1000;}
 };
 
 struct	RecordB
 {
 	uchar data[500];
-	RecordB() {memset(data, 'B', sizeof(data));}
+	RecordB() {memset(data, 'B', sizeof(data)); ((ushort*)data)[0] = 500;}
 };
 
 struct	RecordC
 {
-	uchar data[8190];
-	RecordC() {memset(data, 'C', sizeof(data));}
+	uchar data[8186];
+	RecordC() {memset(data, 'C', sizeof(data)); ((ushort*)data)[0] = 8186;}
 };
 
 int	main()
@@ -34,6 +34,10 @@ int	main()
 		auto p = rm.insert(id1, RecordA());
 		printf("%d %d\n", p.pageID, (int)(p.slotID));
 	}
+	rm.remove(id1, RecordPos(1, 2));
+	rm.remove(id1, RecordPos(1, 3));
+	rm.remove(id1, RecordPos(1, 5));
+	rm.remove(id1, RecordPos(1, 7));
 	rm.remove(id1, RecordPos(1, 2));
 	rm.remove(id1, RecordPos(1, 3));
 	rm.remove(id1, RecordPos(1, 5));
@@ -54,8 +58,12 @@ int	main()
 		printf("%d %d\n", p.pageID, (int)(p.slotID));
 	}
 	rm.remove(id2, RecordPos(1, 2));
+	rm.remove(id2, RecordPos(1, 2));
+	rm.remove(id2, RecordPos(1, 3));
 	rm.remove(id2, RecordPos(1, 3));
 	rm.remove(id2, RecordPos(1, 5));
+	rm.remove(id2, RecordPos(1, 5));
+	rm.remove(id2, RecordPos(1, 7));
 	rm.remove(id2, RecordPos(1, 7));
 	for (int i=0; i<10; i++)
 	{
