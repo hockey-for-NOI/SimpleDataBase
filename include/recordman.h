@@ -40,9 +40,6 @@ public:
 	void*	getptr(int fileID, RecordPos const& pos);
 	template <typename T>
 	T&	get(int fileID, RecordPos const& pos) {return *((T*)getptr(fileID, pos));}
-	void	update(int fileID, RecordPos const& pos, void const* objptr, size_t size);
-	template <typename T>
-	void	update(int fileID, RecordPos const& pos, T const& obj) {update(fileID, pos, &obj, sizeof(T));}
 	std::vector<RecordPos>	select(int fileID, std::function<bool(void const*)> const& fun);
 	template <typename T>
 	std::vector<RecordPos>	select(int fileID, std::function<bool(T const&)> const& fun)
@@ -53,6 +50,7 @@ private:
 	FileManager* fileManager;
 
 	ushort	_pageInsert(int fileID, int pageID, void const* objptr, size_t size);
+	std::vector<RecordPos>	_pageSelect(int fileID, int pageID, std::function<bool(void const*)> const& fun);
 };
 
 }	// end namespace SimpleDataBase
