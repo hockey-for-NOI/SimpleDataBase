@@ -23,6 +23,7 @@ class	RecordManager
 {
 public:
 	static	const	ushort	FILE_STEP = 65520u;
+	static	const	ushort	PAGE_SSIZE = PAGE_SIZE >> 1;
 
 	RecordManager();
 	~RecordManager();

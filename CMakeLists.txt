@@ -8,6 +8,9 @@ include_directories(include)
 
 list(APPEND SRC_LIST src/utils.cpp)
 list(APPEND SRC_LIST src/recordman.cpp)
+list(APPEND SRC_LIST src/record_insert.cpp)
+list(APPEND SRC_LIST src/record_remove.cpp)
 
 add_executable(testfilesystem ${SRC_LIST} unittests/testfilesystem.cpp)
 add_executable(testrecordinsert ${SRC_LIST} unittests/testrecordinsert.cpp)
+add_executable(testrecordremove ${SRC_LIST} unittests/testrecordremove.cpp)
