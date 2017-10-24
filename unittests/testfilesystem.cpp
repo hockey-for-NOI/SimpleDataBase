@@ -28,8 +28,8 @@ using namespace std;
 
 int main() {
 	MyBitMap::initConst();   //新加的初始化
-	FileManager* fm = new FileManager();
-	BufPageManager* bpm = new BufPageManager(fm);
+	auto fm = std::make_shared<FileManager>();
+	auto bpm = std::make_shared<BufPageManager>(fm);
 	fm->createFile("testfile.txt"); //新建文件
 	fm->createFile("testfile2.txt");
 	int fileID, f2;

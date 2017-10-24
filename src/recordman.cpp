@@ -4,18 +4,13 @@
 namespace	SimpleDataBase
 {
 
-RecordManager::RecordManager()
+RecordManager::RecordManager(
+		std::shared_ptr<FileManager> fm,
+		std::shared_ptr<BufPageManager> bfm)
 {
 	MyBitMap::initConst();
-	fileManager = new FileManager();
-	bufManager = new BufPageManager(fileManager);
-}
-
-RecordManager::~RecordManager()
-{
-	bufManager->close();
-	delete bufManager;
-	delete fileManager;
+	fileManager = fm ? fm : std::make_shared<FileManager>();
+	bufManager = bfm ? bfm : std::make_shared<BufPageManager>(fileManager);
 }
 
 bool	RecordManager::createFile(std::string fileName)
