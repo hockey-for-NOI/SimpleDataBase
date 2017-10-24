@@ -6,6 +6,8 @@
 #include "../utils/pagedef.h"
 #include "../fileio/FileManager.h"
 #include "../utils/MyLinkList.h"
+
+#include <memory>
 /*
  * BufPageManager
  * 实现了一个缓存的管理器
@@ -13,7 +15,7 @@
 struct BufPageManager {
 public:
 	int last;
-	FileManager* fileManager;
+	std::shared_ptr<FileManager> fileManager;
 	MyHashMap* hash;
 	FindReplace* replace;
 	//MyLinkList* bpl;
@@ -157,11 +159,11 @@ public:
 	 * 构造函数
 	 * @参数fm:文件管理器，缓存管理器需要利用文件管理器与磁盘进行交互
 	 */
-	BufPageManager(FileManager* fm) {
+	BufPageManager(std::shared_ptr<FileManager> fm = nullptr) {
 		int c = CAP;
 		int m = MOD;
 		last = -1;
-		fileManager = fm;
+		fileManager = fm ? fm : std::make_shared<FileManager>();
 		//bpl = new MyLinkList(CAP, MAX_FILE_NUM);
 		dirty = new bool[CAP];
 		addr = new BufType[CAP];
@@ -172,5 +174,6 @@ public:
 			addr[i] = NULL;
 		}
 	}
+	~BufPageManager() {close();}
 };
 #endif

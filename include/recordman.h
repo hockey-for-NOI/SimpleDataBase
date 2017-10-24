@@ -25,8 +25,11 @@ public:
 	static	const	ushort	FILE_STEP = 65520u;
 	static	const	short	PAGE_SSIZE = PAGE_SIZE >> 1;
 
-	RecordManager();
-	~RecordManager();
+	RecordManager(std::shared_ptr<FileManager> fileManager = nullptr,
+			std::shared_ptr<BufPageManager> bufManager = nullptr);
+
+	inline	std::shared_ptr<FileManager> getFileManager() const {return fileManager;}
+	inline	std::shared_ptr<BufPageManager> getBufPageManager() const {return bufManager;}
 
 	bool	createFile(std::string fileName);
 	bool	removeFile(std::string fileName);
@@ -46,8 +49,8 @@ public:
 	{return select(fileID, [&fun](void const* ptr){return fun(*((T const*)ptr));});}
 
 private:
-	BufPageManager* bufManager;
-	FileManager* fileManager;
+	std::shared_ptr<BufPageManager> bufManager;
+	std::shared_ptr<FileManager> fileManager;
 
 	short	_pageInsert(int fileID, int pageID, void const* objptr, size_t size);
 	std::vector<short>	_pageSelect(int fileID, int pageID, std::function<bool(void const*)> const& fun);
