@@ -17,12 +17,13 @@ void*	RecordManager::getptr(int fileID, RecordPos const& p)
 std::vector<RecordPos> RecordManager::select(int fileID, std::function<bool(void const*)> const& fun)
 {
 	std::vector <RecordPos> res(0);
-	int bufIndex, pageID = 0;
+	int bufIndex;
+	unsigned	pageID = 0;
 	ushort* b = (ushort*)(bufManager->getPage(fileID, pageID, bufIndex));
 	ushort nPage = b[PAGE_SSIZE - 1];
 	while (true)
 	{
-		for (ushort i=pageID+1; i<=pageID+nPage; i++)
+		for (unsigned i=pageID+1; i<=pageID+nPage; i++)
 			for (auto slotID: _pageSelect(fileID, i, fun))
 				res.emplace_back(i, slotID);
 		if (nPage < FILE_STEP) break;
@@ -32,7 +33,7 @@ std::vector<RecordPos> RecordManager::select(int fileID, std::function<bool(void
 	return res;
 }
 
-std::vector<short> RecordManager::_pageSelect(int fileID, int pageID, std::function<bool(void const*)> const& fun)
+std::vector<short> RecordManager::_pageSelect(int fileID, unsigned pageID, std::function<bool(void const*)> const& fun)
 {
 	int bufIndex;
 	uchar* b = (uchar*)(bufManager->getPage(fileID, pageID, bufIndex));

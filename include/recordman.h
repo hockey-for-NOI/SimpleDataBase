@@ -11,11 +11,11 @@ namespace SimpleDataBase
 
 struct	RecordPos
 {
-	size_t pageID;
+	unsigned pageID;
 	short slotID;
 
 	RecordPos() = default;
-	RecordPos(int pageID, short slotID):
+	RecordPos(unsigned pageID, short slotID):
 		pageID(pageID), slotID(slotID) {}
 };
 
@@ -31,9 +31,9 @@ public:
 	inline	std::shared_ptr<FileManager> getFileManager() const {return fileManager;}
 	inline	std::shared_ptr<BufPageManager> getBufPageManager() const {return bufManager;}
 
-	bool	createFile(std::string fileName);
-	bool	removeFile(std::string fileName);
-	int	openFile(std::string fileName);
+	bool	createFile(std::string const& fileName);
+	bool	removeFile(std::string const& fileName);
+	int	openFile(std::string const& fileName);
 	int	closeFile(int fileID);
 
 	RecordPos	insert(int fileID, void const* objptr, size_t size);
@@ -48,12 +48,12 @@ public:
 	std::vector<RecordPos>	select(int fileID, std::function<bool(T const&)> const& fun)
 	{return select(fileID, [&fun](void const* ptr){return fun(*((T const*)ptr));});}
 
-private:
+protected:
 	std::shared_ptr<BufPageManager> bufManager;
 	std::shared_ptr<FileManager> fileManager;
 
-	short	_pageInsert(int fileID, int pageID, void const* objptr, size_t size);
-	std::vector<short>	_pageSelect(int fileID, int pageID, std::function<bool(void const*)> const& fun);
+	short	_pageInsert(int fileID, unsigned pageID, void const* objptr, size_t size);
+	std::vector<short>	_pageSelect(int fileID, unsigned pageID, std::function<bool(void const*)> const& fun);
 };
 
 }	// end namespace SimpleDataBase

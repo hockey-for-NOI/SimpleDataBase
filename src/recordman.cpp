@@ -8,12 +8,11 @@ RecordManager::RecordManager(
 		std::shared_ptr<FileManager> fm,
 		std::shared_ptr<BufPageManager> bfm)
 {
-	MyBitMap::initConst();
 	fileManager = fm ? fm : std::make_shared<FileManager>();
 	bufManager = bfm ? bfm : std::make_shared<BufPageManager>(fileManager);
 }
 
-bool	RecordManager::createFile(std::string fileName)
+bool	RecordManager::createFile(std::string const& fileName)
 {
 	if (!fileManager->createFile(fileName.c_str())) return false;
 
@@ -29,12 +28,12 @@ bool	RecordManager::createFile(std::string fileName)
 	fileManager->closeFile(fileID);
 }
 
-bool	RecordManager::removeFile(std::string fileName)
+bool	RecordManager::removeFile(std::string const& fileName)
 {
 	return true;
 }
 
-int	RecordManager::openFile(std::string fileName)
+int	RecordManager::openFile(std::string const& fileName)
 {
 	int fileID;
 	fileManager->openFile(fileName.c_str(), fileID);

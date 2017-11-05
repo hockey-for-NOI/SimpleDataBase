@@ -4,7 +4,7 @@
 namespace	SimpleDataBase
 {
 
-short	RecordManager::_pageInsert(int fileID, int pageID, void const* objptr, size_t size)
+short	RecordManager::_pageInsert(int fileID, unsigned pageID, void const* objptr, size_t size)
 {
 	int bufIndex;
 	uchar* b = (uchar*)(bufManager->getPage(fileID, pageID, bufIndex));
@@ -27,7 +27,7 @@ RecordPos	RecordManager::insert(int fileID, void const* objptr, size_t size)
 	bool flag = (size + 2 < PAGE_SSIZE);
 	// Try to find a slot in existing pages if it's not so big
 	
-	int pageID = 0;
+	unsigned pageID = 0;
 
 	int bufIndex;
 	ushort* b = (ushort*)(bufManager->getPage(fileID, pageID, bufIndex));
