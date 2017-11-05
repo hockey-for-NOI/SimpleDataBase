@@ -17,6 +17,11 @@ struct	RecordPos
 	RecordPos() = default;
 	RecordPos(unsigned pageID, short slotID):
 		pageID(pageID), slotID(slotID) {}
+
+	bool	operator<(RecordPos const& o) const
+	{
+		return pageID == o.pageID ? slotID < o.slotID : pageID < o.pageID;
+	}
 };
 
 class	RecordManager
@@ -36,9 +41,9 @@ public:
 	int	openFile(std::string const& fileName);
 	int	closeFile(int fileID);
 
-	RecordPos	insert(int fileID, void const* objptr, size_t size);
+	RecordPos	insert(int fileID, void const* objptr);
 	template <typename T>
-	RecordPos insert(int fileID, T const& obj) {insert(fileID, &obj, sizeof(T));}
+	RecordPos insert(int fileID, T const& obj) {insert(fileID, &obj);}
 	void	remove(int fileID, RecordPos const& pos);
 	void*	getptr(int fileID, RecordPos const& pos);
 	template <typename T>
@@ -52,7 +57,7 @@ protected:
 	std::shared_ptr<BufPageManager> bufManager;
 	std::shared_ptr<FileManager> fileManager;
 
-	short	_pageInsert(int fileID, unsigned pageID, void const* objptr, size_t size);
+	short	_pageInsert(int fileID, unsigned pageID, void const* objptr);
 	std::vector<short>	_pageSelect(int fileID, unsigned pageID, std::function<bool(void const*)> const& fun);
 };
 

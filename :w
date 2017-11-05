@@ -24,7 +24,7 @@ short	RecordManager::_pageInsert(int fileID, unsigned pageID, void const* objptr
 
 RecordPos	RecordManager::insert(int fileID, void const* objptr)
 {
-	ushort size; memcpy(&size, objptr, 2);
+	ushort size = *((ushort const*)objptr);
 	if (size > PAGE_SIZE - 6) return RecordPos(0, 0);
 	bool flag = (size + 2 < PAGE_SSIZE);
 	// Try to find a slot in existing pages if it's not so big
