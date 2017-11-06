@@ -1,9 +1,10 @@
 #include "indexman.h"
+#include <cstring>
 
 namespace SimpleDataBase
 {
 
-RecordPos IndexManager::insert(int fileID, void const* objptr)
+void IndexManager::insert(int fileID, void const* objptr)
 {
 	ushort size; memcpy(&size, objptr, 2);
 	int bufIndex;
@@ -24,31 +25,31 @@ RecordPos IndexManager::insert(int fileID, void const* objptr)
 		}
 		memcpy(&p, sb + sid * 5 - 4, 4);
 	}
-	if (!_leafBinaryInsert(fileID, pageID, objptr))
+	if (!_leafBinaryInsert(fileID, p, objptr))
 	{
 		sb = (ushort*)(bufManager->getPage(fileID, p, bufIndex));
 		uchar* b = (uchar*)sb;
 
 		std::vector <uchar> tPage0(PAGE_SIZE, 0), tPage1(PAGE_SIZE, 0);
-		uchar* b0 = &tPage0[0], b1 = &tPage1[0];
-		ushort* sb0 = (ushort*)b0, sb1 = (ushort*)b1;
+		uchar* b0 = &tPage0[0], *b1 = &tPage1[0];
+		ushort* sb0 = (ushort*)b0, *sb1 = (ushort*)b1;
 
 		short islot, sum;
-		for (islot=0, sum=0; sum<(empty_begin >> 1); islot++)
+		for (islot=0, sum=0; sum<(sb[PAGE_SSIZE-1] >> 1); islot++)
 		{
 			uchar* src = b + sb[PAGE_SSIZE-3-islot];
 			ushort ssize; memcpy(&ssize, src, 2);
-			memcpy(b0 + sum, b + src, ssize);
+			memcpy(b0 + sum, b + (*(ushort*)src), ssize);
 			sb0[PAGE_SSIZE-3-islot] = sum;
 			sum += ssize;
 		}
 		sb0[PAGE_SSIZE-1] = sum;
 		ushort slotsplit = sb0[PAGE_SSIZE-2] = islot;
-		for (islot = sum = 0; slotsplit + islot < nslot; islot++)
+		for (islot = sum = 0; slotsplit + islot < sb[PAGE_SSIZE-2]; islot++)
 		{
 			uchar* src = b + sb[PAGE_SSIZE-3-slotsplit-islot];
 			ushort ssize; memcpy(&ssize, src, 2);
-			memcpy(b1 + sum, b + src, ssize);
+			memcpy(b1 + sum, b + (*(ushort*)src), ssize);
 			sb1[PAGE_SSIZE-3-islot] = sum;
 			sum += ssize;
 		}
@@ -72,7 +73,7 @@ RecordPos IndexManager::insert(int fileID, void const* objptr)
 		int idepth;
 		for (idepth=0; idepth<depth; idepth++)
 		{
-			b = (uchar*)bufManager->getPage(fileID, stack[idepth], bufIndex);
+			b = (uchar*)bufManager->getPage(fileID, pstack[idepth], bufIndex);
 			sb = (ushort*)b;
 			//Insert (tpos, newPage)
 			ushort islot;
@@ -113,7 +114,7 @@ RecordPos IndexManager::insert(int fileID, void const* objptr)
 			b = (uchar*)bufManager->getPage(fileID, p, bufIndex);
 			sb = (ushort*)b;
 			sb[0] = 2;
-			memcpy(sb + 1, stack + depth - 1, 4);
+			memcpy(sb + 1, pstack + depth - 1, 4);
 			memcpy(sb + 3, &tpos, 6);
 			memcpy(sb + 6, &newPage, 4);
 			bufManager->markDirty(bufIndex);
@@ -121,7 +122,7 @@ RecordPos IndexManager::insert(int fileID, void const* objptr)
 	}
 }
 
-bool IndexManager::_leafBinaryInsert(int fileID, int pageID, void const* objptr);
+bool IndexManager::_leafBinaryInsert(int fileID, int pageID, void const* objptr)
 {
 	ushort size; memcpy(&size, objptr, 2);
 	int bufIndex;
@@ -129,6 +130,7 @@ bool IndexManager::_leafBinaryInsert(int fileID, int pageID, void const* objptr)
 	uchar* b = (uchar*)sb;
 	ushort &empty_begin = sb[PAGE_SSIZE - 1];
 	ushort &nslot = sb[PAGE_SSIZE - 2];
+	RecordPos pos, tpos; memcpy(&pos, ((ushort*)objptr) + 1, 6);
 	if (empty_begin + (nslot<<1) + 6 + size <= PAGE_SIZE)
 	{
 		memcpy(b + empty_begin, objptr, size);

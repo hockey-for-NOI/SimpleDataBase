@@ -43,7 +43,7 @@ public:
 
 	RecordPos	insert(int fileID, void const* objptr);
 	template <typename T>
-	RecordPos insert(int fileID, T const& obj) {insert(fileID, &obj);}
+	RecordPos ins(int fileID, T const& obj) {insert(fileID, &obj);}
 	void	remove(int fileID, RecordPos const& pos);
 	void*	getptr(int fileID, RecordPos const& pos);
 	template <typename T>

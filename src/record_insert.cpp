@@ -43,7 +43,7 @@ RecordPos	RecordManager::insert(int fileID, void const* objptr)
 				for (ushort bit_index=0; (!(bit_index & 16)) && (byte_index << 4 | bit_index)<pagenum; bit_index++)
 					if (!(b[byte_index] & (1 << bit_index)))
 					{
-						short slotID = _pageInsert(fileID, pageID + (byte_index << 4 | bit_index) + 1, objptr, size);
+						short slotID = _pageInsert(fileID, pageID + (byte_index << 4 | bit_index) + 1, objptr);
 						if (slotID != -1)
 							return RecordPos(pageID + (byte_index << 4 | bit_index) + 1, slotID);
 						else
@@ -76,7 +76,7 @@ RecordPos	RecordManager::insert(int fileID, void const* objptr)
 	bufManager->markDirty(bufIndex);
 	b = (ushort*)(bufManager->allocPage(fileID, pageID + pagenum, bufIndex, false));
 	memset(b, 0, PAGE_SIZE);
-	ushort slotID = _pageInsert(fileID, pageID + pagenum, objptr, size);
+	ushort slotID = _pageInsert(fileID, pageID + pagenum, objptr);
 	return RecordPos(pageID + pagenum, slotID);
 }
 

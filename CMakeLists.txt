@@ -7,12 +7,19 @@ project(SimpleDataBase)
 include_directories(include)
 
 list(APPEND SRC_LIST src/utils.cpp)
+
 list(APPEND SRC_LIST src/recordman.cpp)
 list(APPEND SRC_LIST src/record_insert.cpp)
 list(APPEND SRC_LIST src/record_remove.cpp)
 list(APPEND SRC_LIST src/record_access.cpp)
 
+list(APPEND SRC_LIST src/indexman.cpp)
+list(APPEND SRC_LIST src/index_insert.cpp)
+
 add_executable(testfilesystem ${SRC_LIST} unittests/testfilesystem.cpp)
+
 add_executable(testrecordinsert ${SRC_LIST} unittests/testrecordinsert.cpp)
 add_executable(testrecordremove ${SRC_LIST} unittests/testrecordremove.cpp)
 add_executable(testrecordaccess ${SRC_LIST} unittests/testrecordaccess.cpp)
+
+add_executable(testindexinsert ${SRC_LIST} unittests/testindexinsert.cpp)

@@ -1,7 +1,9 @@
 #include "utils/pagedef.h"
+#include "utils/MyBitMap.h"
 
 class	EnableMyBitMapInitConstDummyClass
 {
+public:
 	EnableMyBitMapInitConstDummyClass() {MyBitMap::initConst();}
 }	enableMyBitMapInitConstDummyClassInstance;
 
