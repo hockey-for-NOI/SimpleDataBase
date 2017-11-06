@@ -22,20 +22,10 @@ int	main()
 	im.createIndex("test2.dat");
 	int id1 = im.openIndex("test1.dat");
 	int id2 = im.openIndex("test2.dat");
-	im.ins(id1, RecordA(10, 5));
-	im.ins(id1, RecordA(10, 3));
-	im.ins(id1, RecordA(10, 6));
-	im.ins(id1, RecordA(10, 8));
-	im.ins(id1, RecordA(10, 7));
 	im.ins(id1, RecordA(10, 0));
-	im.ins(id1, RecordA(10, 9));
-	im.ins(id1, RecordA(10, 1));
-	im.ins(id1, RecordA(10, 2));
-	im.ins(id1, RecordA(10, 4));
-	im.ins(id1, RecordA(1, 0));
-	im.ins(id1, RecordA(1, 1));
-	im.ins(id1, RecordA(1, 2));
-	im.ins(id1, RecordA(1, 3));
-	im.ins(id1, RecordA(1, 4));
+	for (int i=0; i<17; i++) im.ins(id1, RecordA(10, 1));
+	for (int i=0; i<35; i++) im.ins(id1, RecordA(10, 2));
+	printf("%d\n", im.remove(id1, RecordPos(10, 1)));
+	printf("%d\n", im.remove(id1, RecordPos(10, 2)));
 	return 0;
 }

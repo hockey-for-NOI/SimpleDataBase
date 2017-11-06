@@ -79,8 +79,8 @@ void IndexManager::insert(int fileID, void const* objptr)
 			for (islot=sb[0]; --islot; )
 			{
 				memcpy(&pos, sb + islot * 5 - 2, 6);
-				if (pos < tpos) break;
-				else memcpy(sb + islot * 5 + 3, sb + islot * 5 - 2, 6);
+				if (!(tpos < pos)) break;
+				else memcpy(sb + islot * 5 + 3, sb + islot * 5 - 2, 10);
 			}
 			memcpy(sb + islot * 5 + 3, &tpos, 6);
 			memcpy(sb + islot * 5 + 6, &newPage, 4);

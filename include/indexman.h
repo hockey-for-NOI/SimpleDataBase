@@ -21,11 +21,13 @@ public:
 	void	insert(int fileID, void const* objptr);
 	template <typename T>
 	RecordPos ins(int fileID, T const& obj) {insert(fileID, &obj);}
-	void	remove(int fileID, RecordPos const& key);
+	int	remove(int fileID, RecordPos const& key);
 	void*	getptr(int fileID, RecordPos const& key);
 
 protected:
 	bool _leafBinaryInsert(int fileID, int pageID, void const* objptr);
+	int	_innerRemove(int fileID, int pageID, int depth, RecordPos const& pos);
+	int	_leafRemove(int fileID, int pageID, RecordPos const& pos);
 };
 
 }	// end namespace SimpleDataBase
