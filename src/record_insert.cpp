@@ -4,8 +4,9 @@
 namespace	SimpleDataBase
 {
 
-short	RecordManager::_pageInsert(int fileID, int pageID, void const* objptr, size_t size)
+short	RecordManager::_pageInsert(int fileID, unsigned pageID, void const* objptr)
 {
+	ushort size; memcpy(&size, objptr, 2);
 	int bufIndex;
 	uchar* b = (uchar*)(bufManager->getPage(fileID, pageID, bufIndex));
 	short* sb = (short*)b;
@@ -21,13 +22,14 @@ short	RecordManager::_pageInsert(int fileID, int pageID, void const* objptr, siz
 	} else return -1;
 }
 
-RecordPos	RecordManager::insert(int fileID, void const* objptr, size_t size)
+RecordPos	RecordManager::insert(int fileID, void const* objptr)
 {
+	ushort size; memcpy(&size, objptr, 2);
 	if (size > PAGE_SIZE - 6) return RecordPos(0, 0);
 	bool flag = (size + 2 < PAGE_SSIZE);
 	// Try to find a slot in existing pages if it's not so big
 	
-	int pageID = 0;
+	unsigned pageID = 0;
 
 	int bufIndex;
 	ushort* b = (ushort*)(bufManager->getPage(fileID, pageID, bufIndex));
@@ -41,7 +43,7 @@ RecordPos	RecordManager::insert(int fileID, void const* objptr, size_t size)
 				for (ushort bit_index=0; (!(bit_index & 16)) && (byte_index << 4 | bit_index)<pagenum; bit_index++)
 					if (!(b[byte_index] & (1 << bit_index)))
 					{
-						short slotID = _pageInsert(fileID, pageID + (byte_index << 4 | bit_index) + 1, objptr, size);
+						short slotID = _pageInsert(fileID, pageID + (byte_index << 4 | bit_index) + 1, objptr);
 						if (slotID != -1)
 							return RecordPos(pageID + (byte_index << 4 | bit_index) + 1, slotID);
 						else
@@ -74,7 +76,7 @@ RecordPos	RecordManager::insert(int fileID, void const* objptr, size_t size)
 	bufManager->markDirty(bufIndex);
 	b = (ushort*)(bufManager->allocPage(fileID, pageID + pagenum, bufIndex, false));
 	memset(b, 0, PAGE_SIZE);
-	ushort slotID = _pageInsert(fileID, pageID + pagenum, objptr, size);
+	ushort slotID = _pageInsert(fileID, pageID + pagenum, objptr);
 	return RecordPos(pageID + pagenum, slotID);
 }
 

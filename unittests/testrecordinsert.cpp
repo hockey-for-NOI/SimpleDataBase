@@ -31,32 +31,32 @@ int	main()
 	int id2 = rm.openFile("test2.dat");
 	for (int i=0; i<10; i++)
 	{
-		auto p = rm.insert(id1, RecordA());
+		auto p = rm.ins(id1, RecordA());
 		printf("%d %d\n", p.pageID, (int)(p.slotID));
 	}
 	for (int i=0; i<10; i++)
 	{
-		auto p = rm.insert(id1, RecordC());
+		auto p = rm.ins(id1, RecordC());
 		printf("%d %d\n", p.pageID, (int)(p.slotID));
 	}
 	for (int i=0; i<10; i++)
 	{
-		auto p = rm.insert(id1, RecordB());
+		auto p = rm.ins(id1, RecordB());
 		printf("%d %d\n", p.pageID, (int)(p.slotID));
 	}
 	for (int i=0; i<10; i++)
 	{
-		auto p = rm.insert(id2, RecordB());
+		auto p = rm.ins(id2, RecordB());
 		printf("%d %d\n", p.pageID, (int)(p.slotID));
 	}
 	for (int i=0; i<10; i++)
 	{
-		auto p = rm.insert(id2, RecordC());
+		auto p = rm.ins(id2, RecordC());
 		printf("%d %d\n", p.pageID, (int)(p.slotID));
 	}
 	for (int i=0; i<10; i++)
 	{
-		auto p = rm.insert(id2, RecordA());
+		auto p = rm.ins(id2, RecordA());
 		printf("%d %d\n", p.pageID, (int)(p.slotID));
 	}
 	return 0;

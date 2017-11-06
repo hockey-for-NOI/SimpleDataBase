@@ -8,8 +8,8 @@ void	RecordManager::remove(int fileID, RecordPos const& p)
 {
 	// Shift, and set next ptr to this ptr.
 	// Waste 16 bits.
-	int pageShift = p.pageID % FILE_STEP;
-	int flagPageID = p.pageID - pageShift;
+	ushort pageShift = p.pageID % FILE_STEP;
+	unsigned flagPageID = p.pageID - pageShift;
 	int bufIndex;
 	
 	uchar* b = (uchar*)(bufManager->getPage(fileID, p.pageID, bufIndex));
