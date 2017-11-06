@@ -16,6 +16,7 @@ list(APPEND SRC_LIST src/record_access.cpp)
 list(APPEND SRC_LIST src/indexman.cpp)
 list(APPEND SRC_LIST src/index_insert.cpp)
 list(APPEND SRC_LIST src/index_remove.cpp)
+list(APPEND SRC_LIST src/index_getobj.cpp)
 
 add_executable(testfilesystem ${SRC_LIST} unittests/testfilesystem.cpp)
 
@@ -25,3 +26,4 @@ add_executable(testrecordaccess ${SRC_LIST} unittests/testrecordaccess.cpp)
 
 add_executable(testindexinsert ${SRC_LIST} unittests/testindexinsert.cpp)
 add_executable(testindexremove ${SRC_LIST} unittests/testindexremove.cpp)
+add_executable(testindexgetobj ${SRC_LIST} unittests/testindexgetobj.cpp)
