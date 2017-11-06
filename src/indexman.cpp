@@ -14,12 +14,12 @@ bool	IndexManager::createIndex(std::string const& indexName)
 	int bufIndex;
 	BufType b = bufManager->allocPage(fileID, 0, bufIndex, false);
 	memset(b, 0, PAGE_SIZE);
-	b[0] = 1; b[(PAGE_SIZE >> 2) - 1] = 2;
+	b[0] = 1; b[(PAGE_SIZE >> 2) - 1] = 3;
 	bufManager->markDirty(bufIndex);
 	bufManager->writeBack(bufIndex);
 	b = bufManager->allocPage(fileID, 1, bufIndex, false);
 	memset(b, 0, PAGE_SIZE);
-	b[0] = 1 << 16; b[1] = 2 << 16;
+	b[0] = 131073;
 	bufManager->markDirty(bufIndex);
 	bufManager->writeBack(bufIndex);
 	b = bufManager->allocPage(fileID, 2, bufIndex, false);

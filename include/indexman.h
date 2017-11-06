@@ -19,6 +19,8 @@ public:
 	inline	int closeIndex(int indexID) {return closeFile(indexID);}
 
 	void	insert(int fileID, void const* objptr);
+	template <typename T>
+	RecordPos ins(int fileID, T const& obj) {insert(fileID, &obj);}
 	void	remove(int fileID, RecordPos const& key);
 	void*	getptr(int fileID, RecordPos const& key);
 

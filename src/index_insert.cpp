@@ -13,9 +13,9 @@ void IndexManager::insert(int fileID, void const* objptr)
 	RecordPos pos, tpos; memcpy(&pos, ((ushort*)objptr) + 1, 6);
 	int p = ib[0]; int depth = ib[1] + 1;
 	int pstack[depth];
-	while (depth--)
+	for (int idp=depth; idp--;)
 	{
-		pstack[depth] = p;
+		pstack[idp] = p;
 		sb = (ushort*)(bufManager->getPage(fileID, p, bufIndex));
 		ushort sid;
 		for (sid=1; sid<sb[0]; sid++)
@@ -39,7 +39,7 @@ void IndexManager::insert(int fileID, void const* objptr)
 		{
 			uchar* src = b + sb[PAGE_SSIZE-3-islot];
 			ushort ssize; memcpy(&ssize, src, 2);
-			memcpy(b0 + sum, b + (*(ushort*)src), ssize);
+			memcpy(b0 + sum, src, ssize);
 			sb0[PAGE_SSIZE-3-islot] = sum;
 			sum += ssize;
 		}
@@ -49,7 +49,7 @@ void IndexManager::insert(int fileID, void const* objptr)
 		{
 			uchar* src = b + sb[PAGE_SSIZE-3-slotsplit-islot];
 			ushort ssize; memcpy(&ssize, src, 2);
-			memcpy(b1 + sum, b + (*(ushort*)src), ssize);
+			memcpy(b1 + sum, src, ssize);
 			sb1[PAGE_SSIZE-3-islot] = sum;
 			sum += ssize;
 		}
@@ -65,10 +65,9 @@ void IndexManager::insert(int fileID, void const* objptr)
 		bufManager->markDirty(bufIndex);
 
 		ib = bufManager->allocPage(fileID, newPage, bufIndex, false);
-		memcpy(b, b1, PAGE_SIZE);
+		memcpy(ib, b1, PAGE_SIZE);
 		bufManager->markDirty(bufIndex);
 		if (!(pos < tpos)) _leafBinaryInsert(fileID, newPage, objptr);
-		bufManager->writeBack(bufIndex);
 
 		int idepth;
 		for (idepth=0; idepth<depth; idepth++)
@@ -109,6 +108,7 @@ void IndexManager::insert(int fileID, void const* objptr)
 			//Create newPage and reset root
 			ib = bufManager->getPage(fileID, 0, bufIndex);
 			p = ib[0] = ib[(PAGE_SIZE>>2)-1] ++;
+			++ib[1];
 			bufManager->markDirty(bufIndex);
 
 			b = (uchar*)bufManager->getPage(fileID, p, bufIndex);
@@ -135,13 +135,14 @@ bool IndexManager::_leafBinaryInsert(int fileID, int pageID, void const* objptr)
 	{
 		memcpy(b + empty_begin, objptr, size);
 		ushort id, sid;
-		for (id=0, sid=PAGE_SSIZE-2-nslot; id<nslot; id++, sid--)
+		for (id=0, sid=PAGE_SSIZE-2-nslot; id<nslot; id++, sid++)
 		{
 			memcpy(&tpos, b + sb[sid] + 2, 6);
 			if (pos < tpos) sb[sid - 1] = sb[sid]; else break;
 		}
 		sb[sid - 1] = empty_begin;
 		empty_begin += size;
+		nslot++;
 		bufManager->markDirty(bufIndex);
 		return true;
 	}
