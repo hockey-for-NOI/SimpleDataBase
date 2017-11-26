@@ -4,7 +4,7 @@
 namespace SimpleDataBase
 {
 
-void	IndexManager::getobj(int fileID, RecordPos const& pos, std::function<void(void*)> const& grabber)
+void	IndexManager::getobj(int fileID, RecordPos const& pos, std::function<void(void const*)> const& grabber)
 {
 	int bufIndex;
 	BufType ib = bufManager->getPage(fileID, 0, bufIndex);
@@ -12,7 +12,7 @@ void	IndexManager::getobj(int fileID, RecordPos const& pos, std::function<void(v
 	_innerGetobj(fileID, root, depth, pos, grabber);
 }
 
-void	IndexManager::_innerGetobj(int fileID, int pageID, int depth, RecordPos const& pos, std::function<void(void*)> const& grabber)
+void	IndexManager::_innerGetobj(int fileID, int pageID, int depth, RecordPos const& pos, std::function<void(void const*)> const& grabber)
 {
 	int bufIndex;
 	ushort* sb = (ushort*)(bufManager->getPage(fileID, pageID, bufIndex));
@@ -38,7 +38,7 @@ void	IndexManager::_innerGetobj(int fileID, int pageID, int depth, RecordPos con
 	}
 }
 
-void	IndexManager::_leafGetobj(int fileID, int pageID, RecordPos const& pos, std::function<void(void*)> const& grabber)
+void	IndexManager::_leafGetobj(int fileID, int pageID, RecordPos const& pos, std::function<void(void const*)> const& grabber)
 {
 	int bufIndex;
 	ushort* sb = (ushort*)(bufManager->getPage(fileID, pageID, bufIndex));

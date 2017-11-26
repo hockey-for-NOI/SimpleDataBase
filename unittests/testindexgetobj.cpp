@@ -30,17 +30,25 @@ int	main()
 	im.ins(id1, RecordA(10, 0));
 	for (int i=0; i<17; i++) im.ins(id1, RecordA(10, 1));
 	for (int i=0; i<35; i++) im.ins(id1, RecordA(10, 2));
-	for (auto i: im.get<int>(id1, RecordPos(10, 1), [](void* ptr){
+	for (auto i: im.get<int>(id1, RecordPos(10, 1), [](void const* ptr){
 		int x;
-		memcpy(&x, ((uchar*)ptr) + 8, 4);
+		memcpy(&x, ((uchar const*)ptr) + 8, 4);
 		return x;
 	})) printf("%d ", i); printf("\n");
-	printf("%d\n", im.remove(id1, RecordPos(10, 1)));
-	for (auto i: im.get<int>(id1, RecordPos(10, 1), [](void* ptr){
+	printf("%d\n", im.remove(id1, RecordPos(10, 1), [](void const* ptr){
 		int x;
-		memcpy(&x, ((uchar*)ptr) + 8, 4);
+		memcpy(&x, ((uchar const*)ptr) + 8, 4);
+		return x > 1010 && x < 1022;
+	}));
+	for (auto i: im.get<int>(id1, RecordPos(10, 1), [](void const* ptr){
+		int x;
+		memcpy(&x, ((uchar const*)ptr) + 8, 4);
 		return x;
 	})) printf("%d ", i); printf("\n");
-	printf("%d\n", im.remove(id1, RecordPos(10, 2)));
+	printf("%d\n", im.remove(id1, RecordPos(10, 2), [](void const* ptr){
+		int x;
+		memcpy(&x, ((uchar const*)ptr) + 8, 4);
+		return x > 1010 && x < 1022;
+	}));
 	return 0;
 }
