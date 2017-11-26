@@ -4,15 +4,15 @@
 namespace SimpleDataBase
 {
 
-int	IndexManager::remove(int fileID, RecordPos const& pos)
+int	IndexManager::remove(int fileID, RecordPos const& pos, std::function<bool(void const*)> const& confirm)
 {
 	int bufIndex;
 	BufType ib = bufManager->getPage(fileID, 0, bufIndex);
 	int root = ib[0], depth = ib[1];
-	return _innerRemove(fileID, root, depth, pos);
+	return _innerRemove(fileID, root, depth, pos, confirm);
 }
 
-int	IndexManager::_innerRemove(int fileID, int pageID, int depth, RecordPos const& pos)
+int	IndexManager::_innerRemove(int fileID, int pageID, int depth, RecordPos const& pos, std::function<bool(void const*)> const& confirm)
 {
 	int bufIndex;
 	ushort* sb = (ushort*)(bufManager->getPage(fileID, pageID, bufIndex));
@@ -33,13 +33,13 @@ int	IndexManager::_innerRemove(int fileID, int pageID, int depth, RecordPos cons
 	for (ushort ir=rbegin; ir<=rend; ir++)
 	{
 		memcpy(&subPage, sb + ir * 5 + 1, 4);
-		if (depth) tot += _innerRemove(fileID, subPage, depth-1, pos);
-		else tot += _leafRemove(fileID, subPage, pos);
+		if (depth) tot += _innerRemove(fileID, subPage, depth-1, pos, confirm);
+		else tot += _leafRemove(fileID, subPage, pos, confirm);
 	}
 	return tot;
 }
 
-int	IndexManager::_leafRemove(int fileID, int pageID, RecordPos const& pos)
+int	IndexManager::_leafRemove(int fileID, int pageID, RecordPos const& pos, std::function<bool(void const*)> const& confirm)
 {
 	int bufIndex;
 	ushort* sb = (ushort*)(bufManager->getPage(fileID, pageID, bufIndex));
@@ -56,6 +56,11 @@ int	IndexManager::_leafRemove(int fileID, int pageID, RecordPos const& pos)
 	{
 		memcpy(&tpos, b + sb[PAGE_SSIZE-3-rend] + 2, 6);
 		if (pos < tpos) break;
+		if (!confirm(b + sb[PAGE_SSIZE-3-rend]))
+		{
+			sb[PAGE_SSIZE-3-rbegin] = sb[PAGE_SSIZE-3-rend];
+			rbegin++;
+		}
 	}
 	if (rbegin < rend)
 	{
