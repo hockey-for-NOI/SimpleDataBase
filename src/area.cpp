@@ -3,7 +3,7 @@
 namespace	SimpleDataBase
 {
 
-std::string	Area::showtype()
+std::string	Area::showtype() const
 {
 	switch (type)
 	{

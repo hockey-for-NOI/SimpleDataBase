@@ -21,8 +21,8 @@ SystemDB::SystemDB()
 {
 	auto fm = std::make_shared<FileManager>();
 	auto bfm = std::make_shared<BufPageManager>(fm);
-	recordManager = new RecordManager(fm, bfm);
-	indexManager = new IndexManager(fm, bfm);
+	recordManager = std::make_shared<RecordManager>(fm, bfm);
+	indexManager = std::make_shared<IndexManager>(fm, bfm);
 
 	current_db = SYSTEM_DB_NAME;
 	FILE *f = fopen(getCurrentDir().c_str(), "a");
@@ -41,7 +41,7 @@ bool	SystemDB::createDB(std::string const& name)
 	std::string prev_db = current_db;
 	current_db = SYSTEM_DB_NAME;
 
-	File *f = fopen(getTableFile(name).c_str(), "r");
+	FILE *f = fopen(getTableFile(name).c_str(), "r");
 	if (f) {fclose(f); return 0;}
 
 	recordManager->createFile(getTableFile(name));
@@ -58,7 +58,7 @@ bool	SystemDB::dropDB(std::string const& name)
 	std::string prev_db = current_db;
 	current_db = SYSTEM_DB_NAME;
 
-	File *f = fopen(getTableFile(name).c_str(), "r");
+	FILE *f = fopen(getTableFile(name).c_str(), "r");
 	if (!f) return 0;
 	fclose(f);
 	system(("rm " + getTableFile(name)).c_str());
@@ -82,13 +82,13 @@ std::string SystemDB::showDB()
 	return std::string(std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>());
 }
 
-bool	SystemDB::useDB(std::string name)
+bool	SystemDB::useDB(std::string const& name)
 {
 	if (name == SYSTEM_DB_NAME || !name.length()) return 0;
 	std::string prev_db = current_db;
 	current_db = SYSTEM_DB_NAME;
 
-	File *f = fopen(getTableFile(name).c_str(), "r");
+	FILE *f = fopen(getTableFile(name).c_str(), "r");
 	if (!f) return 0;
 	fclose(f);
 	current_db = name;
@@ -97,13 +97,13 @@ bool	SystemDB::useDB(std::string name)
 
 std::string	SystemDB::showTable()
 {
-	if (name == SYSTEM_DB_NAME || !name.length()) return "No table using.";
+	if (current_db == SYSTEM_DB_NAME || !current_db.length()) return "No table using.";
 	int fid = recordManager->openFile(getSysTable());
 	std::string prev_table = "";
 	std::string result;
 	for (auto const& i: recordManager->select(fid, [](void const*){return true;}))
 	{
-		Area const& area = recordManager->get(fid, i);
+		Area const& area = recordManager->get<Area>(fid, i);
 		if (std::string(area.table) != prev_table)
 		{
 			result = result + area.table + ":\n";
@@ -115,9 +115,9 @@ std::string	SystemDB::showTable()
 	return result;
 }
 
-bool	dropTable(std::string const& name)
+bool	SystemDB::dropTable(std::string const& name)
 {
-	if (name == SYSTEM_DB_NAME || !name.length()) return 0;
+	if (current_db == SYSTEM_DB_NAME || !current_db.length() || !name.length()) return 0;
 	int fid = recordManager->openFile(getSysTable());
 	bool	flag = 0;
 	for (auto const& i: recordManager->select<Area>(fid, [&name](Area const& area){return name == area.name;}))
@@ -128,14 +128,14 @@ bool	dropTable(std::string const& name)
 	recordManager->closeFile(fid);
 	if (flag)
 	{
-		system("rm " + getTableFile(name));
+		system(("rm " + getTableFile(name)).c_str());
 	}
 	return flag;
 }
 
-bool	createTable(std::string const& name, std::vector<Area> const& areas)
+bool	SystemDB::createTable(std::string const& name, std::vector<Area> const& areas)
 {
-	if (name == SYSTEM_DB_NAME || !name.length()) return 0;
+	if (current_db == SYSTEM_DB_NAME || !current_db.length() || !name.length()) return 0;
 	int fid = recordManager->openFile(getSysTable());
 	bool	flag = 1;
 	for (auto const& i: recordManager->select<Area>(fid, [&name](Area const& area){return name == area.name;}))
@@ -149,7 +149,7 @@ bool	createTable(std::string const& name, std::vector<Area> const& areas)
 		return 0;
 	}
 	for (auto const& area: areas)
-		recordManager->insert<Area>(fid, area);
+		recordManager->ins<Area>(fid, area);
 	recordManager->closeFile(fid);
 	recordManager->createFile(getTableFile(name));
 	return 1;

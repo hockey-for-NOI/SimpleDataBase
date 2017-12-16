@@ -5,6 +5,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g")
 
 project(SimpleDataBase)
 include_directories(include)
+link_directories(lib /usr/local/lib)
 
 list(APPEND SRC_LIST src/utils.cpp)
 
@@ -18,6 +19,9 @@ list(APPEND SRC_LIST src/index_insert.cpp)
 list(APPEND SRC_LIST src/index_remove.cpp)
 list(APPEND SRC_LIST src/index_getobj.cpp)
 
+list(APPEND SRC_LIST src/area.cpp)
+list(APPEND SRC_LIST src/systemdb.cpp)
+
 add_executable(testfilesystem ${SRC_LIST} unittests/testfilesystem.cpp)
 
 add_executable(testrecordinsert ${SRC_LIST} unittests/testrecordinsert.cpp)
@@ -27,3 +31,6 @@ add_executable(testrecordaccess ${SRC_LIST} unittests/testrecordaccess.cpp)
 add_executable(testindexinsert ${SRC_LIST} unittests/testindexinsert.cpp)
 add_executable(testindexremove ${SRC_LIST} unittests/testindexremove.cpp)
 add_executable(testindexgetobj ${SRC_LIST} unittests/testindexgetobj.cpp)
+
+add_executable(SimpleDataBase ${SRC_LIST} src/main.cpp)
+target_link_libraries(SimpleDataBase sqlparser)
