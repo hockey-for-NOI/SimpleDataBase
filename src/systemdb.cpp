@@ -95,4 +95,64 @@ bool	SystemDB::useDB(std::string name)
 	return 1;
 }
 
+std::string	SystemDB::showTable()
+{
+	if (name == SYSTEM_DB_NAME || !name.length()) return "No table using.";
+	int fid = recordManager->openFile(getSysTable());
+	std::string prev_table = "";
+	std::string result;
+	for (auto const& i: recordManager->select(fid, [](void const*){return true;}))
+	{
+		Area const& area = recordManager->get(fid, i);
+		if (std::string(area.table) != prev_table)
+		{
+			result = result + area.table + ":\n";
+			prev_table = area.table;
+		}
+		result = result + "\t" + area.name + ": " + area.showtype() + "\n";
+	}
+	recordManager->closeFile(fid);
+	return result;
+}
+
+bool	dropTable(std::string const& name)
+{
+	if (name == SYSTEM_DB_NAME || !name.length()) return 0;
+	int fid = recordManager->openFile(getSysTable());
+	bool	flag = 0;
+	for (auto const& i: recordManager->select<Area>(fid, [&name](Area const& area){return name == area.name;}))
+	{
+		recordManager->remove(fid, i);
+		flag = 1;
+	}
+	recordManager->closeFile(fid);
+	if (flag)
+	{
+		system("rm " + getTableFile(name));
+	}
+	return flag;
+}
+
+bool	createTable(std::string const& name, std::vector<Area> const& areas)
+{
+	if (name == SYSTEM_DB_NAME || !name.length()) return 0;
+	int fid = recordManager->openFile(getSysTable());
+	bool	flag = 1;
+	for (auto const& i: recordManager->select<Area>(fid, [&name](Area const& area){return name == area.name;}))
+	{
+		flag = 0;
+		break;
+	}
+	if (!flag)
+	{
+		recordManager->closeFile(fid);
+		return 0;
+	}
+	for (auto const& area: areas)
+		recordManager->insert<Area>(fid, area);
+	recordManager->closeFile(fid);
+	recordManager->createFile(getTableFile(name));
+	return 1;
+}
+
 }	// end namespace SimpleDataBase

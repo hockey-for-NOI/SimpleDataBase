@@ -1,5 +1,6 @@
 #pragma once
 #include "indexman.h"
+#include "area.h"
 #include <string>
 #include <vector>
 
@@ -19,11 +20,16 @@ public:
 
 	inline	std::string	getCurrentDir() {return DEFAULT_ROOT_DIR + "/" + current_db;}
 	inline	std::string getTableFile(std::string table) {return getCurrentDir() + "/" + table;}
+	inline	std::string getSysTable() {return DEFAULT_ROOT_DIR + "/" + SYSTEM_DB_NAME + "/" + current_db;}
 
 	bool	createDB(std::string const& name);
 	bool	dropDB(std::string const& name);
 	std::string	showDB();
 	bool	useDB(std::string const& name);
+
+	bool	createTable(std::string const& name, std::vector<Area> const& areas);
+	bool	dropTable(std::string const& name);
+	std::string	showTable();
 
 private:
 	SystemDB();
