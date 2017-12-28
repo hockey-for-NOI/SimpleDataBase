@@ -9,7 +9,7 @@ void*	RecordManager::getptr(int fileID, RecordPos const& p)
 	uchar* b = (uchar*)(bufManager->getPage(fileID, p.pageID, bufIndex));
 	short* sb = (short*)b;
 
-	short &pos = sb[PAGE_SSIZE - p.slotID - 2];
+	short &pos = sb[PAGE_SSIZE - p.slotID - 3];
 	if (pos == -1) return nullptr;
 	return b + pos;
 }

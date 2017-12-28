@@ -42,7 +42,7 @@ bool	SystemDB::createDB(std::string const& name)
 	current_db = SYSTEM_DB_NAME;
 
 	FILE *f = fopen(getTableFile(name).c_str(), "r");
-	if (f) {fclose(f); return 0;}
+	if (f) {fclose(f); current_db = prev_db; return 0;}
 
 	recordManager->createFile(getTableFile(name));
 	current_db = name;
@@ -59,7 +59,7 @@ bool	SystemDB::dropDB(std::string const& name)
 	current_db = SYSTEM_DB_NAME;
 
 	FILE *f = fopen(getTableFile(name).c_str(), "r");
-	if (!f) return 0;
+	if (!f) {current_db = prev_db; return 0;}
 	fclose(f);
 	system(("rm " + getTableFile(name)).c_str());
 	current_db = name;
@@ -89,7 +89,7 @@ bool	SystemDB::useDB(std::string const& name)
 	current_db = SYSTEM_DB_NAME;
 
 	FILE *f = fopen(getTableFile(name).c_str(), "r");
-	if (!f) return 0;
+	if (!f) {current_db = prev_db; return 0;}
 	fclose(f);
 	current_db = name;
 	return 1;
@@ -109,7 +109,10 @@ std::string	SystemDB::showTable()
 			result = result + area.table + ":\n";
 			prev_table = area.table;
 		}
-		result = result + "\t" + area.name + ": " + area.showtype() + "\n";
+		result = result + "\t" + area.name + ": " + area.showtype();
+		if (area.notnull) result = result + " NOT NULL";
+		if (area.primary) result = result + " PRIMARY KEY";
+		result = result + "\n";
 	}
 	recordManager->closeFile(fid);
 	return result;
@@ -120,7 +123,7 @@ bool	SystemDB::dropTable(std::string const& name)
 	if (current_db == SYSTEM_DB_NAME || !current_db.length() || !name.length()) return 0;
 	int fid = recordManager->openFile(getSysTable());
 	bool	flag = 0;
-	for (auto const& i: recordManager->select<Area>(fid, [&name](Area const& area){return name == area.name;}))
+	for (auto const& i: recordManager->select<Area>(fid, [&name](Area const& area){return name == area.table;}))
 	{
 		recordManager->remove(fid, i);
 		flag = 1;

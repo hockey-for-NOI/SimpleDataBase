@@ -16,6 +16,7 @@ struct	Area
 	ushort	type; //{INT_T, VARCHAR_T, FLOAT_T, DATE_T}
 	ushort	offset, len;
 	char	name[256], table[256];
+	char	notnull, primary;
 
 	std::string	showtype() const;
 };

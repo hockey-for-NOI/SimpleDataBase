@@ -10,5 +10,8 @@
 #include "DropStatement.h"
 #include "PrepareStatement.h"
 #include "ExecuteStatement.h"
+#include "ShowStatement.h"
+#include "DescStatement.h"
+#include "UseStatement.h"
 
 #endif // __STATEMENTS_H__ 
