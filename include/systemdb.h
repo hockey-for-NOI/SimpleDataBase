@@ -31,6 +31,10 @@ public:
 	bool	createTable(std::string const& name, std::vector<Area> const& areas);
 	bool	dropTable(std::string const& name);
 	std::string	showTable();
+	bool	hasTable(std::string const& name);
+	std::vector <Area>	getTableCols(std::string const& name);
+
+	bool	insertRecord(std::string const& name, std::vector < std::vector<char> > const& chardata);
 
 private:
 	SystemDB();

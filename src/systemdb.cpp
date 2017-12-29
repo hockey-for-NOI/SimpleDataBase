@@ -118,6 +118,17 @@ std::string	SystemDB::showTable()
 	return result;
 }
 
+std::vector<Area>	SystemDB::getTableCols(std::string const& name)
+{
+	if (current_db == SYSTEM_DB_NAME || !current_db.length()) return std::vector<Area>();
+	int fid = recordManager->openFile(getSysTable());
+	std::vector<Area> result;
+	for (auto const& i: recordManager->select<Area>(fid, [&name](Area const& area){return name == area.table;}))
+		result.emplace_back(recordManager->get<Area>(fid, i));
+	recordManager->closeFile(fid);
+	return result;
+}
+
 bool	SystemDB::dropTable(std::string const& name)
 {
 	if (current_db == SYSTEM_DB_NAME || !current_db.length() || !name.length()) return 0;
@@ -136,12 +147,21 @@ bool	SystemDB::dropTable(std::string const& name)
 	return flag;
 }
 
+bool	SystemDB::hasTable(std::string const& name)
+{
+	if (current_db == SYSTEM_DB_NAME || !current_db.length() || !name.length()) return 0;
+	int fid = recordManager->openFile(getSysTable());
+	bool flag = recordManager->select<Area>(fid, [&name](Area const& area){return name == area.table;}).size();
+	recordManager->closeFile(fid);
+	return flag;
+}
+
 bool	SystemDB::createTable(std::string const& name, std::vector<Area> const& areas)
 {
 	if (current_db == SYSTEM_DB_NAME || !current_db.length() || !name.length()) return 0;
 	int fid = recordManager->openFile(getSysTable());
 	bool	flag = 1;
-	for (auto const& i: recordManager->select<Area>(fid, [&name](Area const& area){return name == area.name;}))
+	for (auto const& i: recordManager->select<Area>(fid, [&name](Area const& area){return name == area.table;}))
 	{
 		flag = 0;
 		break;
@@ -155,6 +175,15 @@ bool	SystemDB::createTable(std::string const& name, std::vector<Area> const& are
 		recordManager->ins<Area>(fid, area);
 	recordManager->closeFile(fid);
 	recordManager->createFile(getTableFile(name));
+	return 1;
+}
+
+bool	SystemDB::insertRecord(std::string const& name, std::vector < std::vector <char> > const& data)
+{
+	if (current_db == SYSTEM_DB_NAME || !current_db.length() || !name.length()) return 0;
+	int fid = recordManager->openFile(getTableFile(name));
+	for (auto const& dat: data) recordManager->insert(fid, &dat[0]);
+	recordManager->closeFile(fid);
 	return 1;
 }
 
