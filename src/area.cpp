@@ -8,7 +8,7 @@ std::string	Area::showtype() const
 	switch (type)
 	{
 		case INT_T:
-			return "INT(" + std::to_string(len) + ")";
+			return "INT(" + std::to_string(pad) + ")";
 		break;
 		case VARCHAR_T:
 			return "VARCHAR(" + std::to_string(len) + ")";

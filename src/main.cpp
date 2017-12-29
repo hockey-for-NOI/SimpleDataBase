@@ -2,6 +2,7 @@
 #include <string>
 #include <cstring>
 #include "systemdb.h"
+#include "translate.h"
 
 #include "SQLParser.h"
 #include <map>
@@ -51,13 +52,16 @@ int	main()
 								switch (cols[i]->type)
 								{
 									case hsql::ColumnDefinition::INT:
+										area.len = 4;
+										area.pad = cols[i]->len;
 										area.type = SimpleDataBase::Area::INT_T;
 									break;
 									case hsql::ColumnDefinition::VARCHAR:
+										area.len = cols[i]->len;
+										area.pad = cols[i]->len;
 										area.type = SimpleDataBase::Area::VARCHAR_T;
 									break;
 								}
-								area.len = cols[i]->len;
 								area.size = sizeof(SimpleDataBase::Area);
 								strcpy(area.name, cols[i]->name);
 								strcpy(area.table, cstmt->tableName);
@@ -143,12 +147,10 @@ int	main()
 								case hsql::kExprLiteralInt:
 									if (cols[i].type == SimpleDataBase::Area::INT_T)
 									{
-										auto name = std::to_string(dat[i]->ival);
-										int len = name.length();
-										if (len > cols[i].len) {cout << "Length Exceed." << endl; flag = 1; break;} 
-										buffer.resize(cols[i].len + 1);
-										memset(&buffer[0], 0, cols[i].len + 1);
-										memcpy(&buffer[1], name.c_str(), len);
+										int tmp = dat[i]->ival;
+										if (tmp != dat[i]->ival) {cout << "Integer Exceed." << endl; flag = 1; break;} 
+										buffer.resize(5);
+										memcpy(&buffer[1], &tmp, 4);
 									}
 									else {cout << "Type mismatch." << endl; flag = 1; break;}
 								break;
@@ -182,6 +184,17 @@ int	main()
 //					for (auto const& i: chardata) for (auto const& j: i) cout << int(j) << endl;
 					sys.insertRecord(tablename, chardata);
 				}
+				break;
+				case hsql::kStmtDelete:
+					auto &sys = SimpleDataBase::SystemDB::get_instance();
+					if (!sys.getCurrentDB().length()) {cout << "ERROR: No current DB." << endl; break;}
+					auto dstmt = dynamic_cast<hsql::DeleteStatement*>(stmt);
+					auto tablename = std::string(dstmt->tableName);
+					if (!sys.hasTable(tablename)) {cout << "ERROR: No such table." << endl; break;}
+					auto cols = sys.getTableCols(tablename);
+					auto tr = SimpleDataBase::translate(*dstmt->expr, cols);
+					if (!tr) {cout << "Condition ERROR." << endl; break;}
+					cout << sys.deleteRecord(tablename, *tr) << " Item(s) Deleted." << endl;
 				break;
 			}
 		} else cout << "Invalid." << endl;

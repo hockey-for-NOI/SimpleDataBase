@@ -187,4 +187,14 @@ bool	SystemDB::insertRecord(std::string const& name, std::vector < std::vector <
 	return 1;
 }
 
+int	SystemDB::deleteRecord(std::string const& name, std::function <bool(void const*)> const& cond)
+{
+	if (current_db == SYSTEM_DB_NAME || !current_db.length() || !name.length()) return 0;
+	int fid = recordManager->openFile(getTableFile(name));
+	int cnt = 0;
+	for (auto const& pos: recordManager->select(fid, cond)) recordManager->remove(fid, pos), cnt++;
+	recordManager->closeFile(fid);
+	return cnt;
+}
+
 }	// end namespace SimpleDataBase

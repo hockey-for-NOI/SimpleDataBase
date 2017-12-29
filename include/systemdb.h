@@ -3,6 +3,7 @@
 #include "area.h"
 #include <string>
 #include <vector>
+#include <functional>
 
 namespace	SimpleDataBase
 {
@@ -35,6 +36,7 @@ public:
 	std::vector <Area>	getTableCols(std::string const& name);
 
 	bool	insertRecord(std::string const& name, std::vector < std::vector<char> > const& chardata);
+	int	deleteRecord(std::string const& tablename, std::function <bool(void const*)> const& cond);
 
 private:
 	SystemDB();
