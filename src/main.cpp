@@ -186,15 +186,103 @@ int	main()
 				}
 				break;
 				case hsql::kStmtDelete:
+				{
 					auto &sys = SimpleDataBase::SystemDB::get_instance();
 					if (!sys.getCurrentDB().length()) {cout << "ERROR: No current DB." << endl; break;}
 					auto dstmt = dynamic_cast<hsql::DeleteStatement*>(stmt);
 					auto tablename = std::string(dstmt->tableName);
 					if (!sys.hasTable(tablename)) {cout << "ERROR: No such table." << endl; break;}
 					auto cols = sys.getTableCols(tablename);
-					auto tr = SimpleDataBase::translate(*dstmt->expr, cols);
+					auto tr = SimpleDataBase::translateCond(*dstmt->expr, cols);
 					if (!tr) {cout << "Condition ERROR." << endl; break;}
 					cout << sys.deleteRecord(tablename, *tr) << " Item(s) Deleted." << endl;
+				}
+				break;
+				case hsql::kStmtUpdate:
+				{
+					auto &sys = SimpleDataBase::SystemDB::get_instance();
+					if (!sys.getCurrentDB().length()) {cout << "ERROR: No current DB." << endl; break;}
+					auto ustmt = dynamic_cast<hsql::UpdateStatement*>(stmt);
+					auto tablename = std::string(ustmt->table->name);
+					if (!sys.hasTable(tablename)) {cout << "ERROR: No such table." << endl; break;}
+					auto cols = sys.getTableCols(tablename);
+					auto tr = SimpleDataBase::translateCond(*ustmt->where, cols);
+					if (!tr) {cout << "Condition ERROR." << endl; break;}
+					auto &upd = *ustmt->updates;
+					std::vector < std::function< bool(void*) > > cvtupd;
+					std::map < std::string, SimpleDataBase::Area > tmp;
+					for (auto const& a: cols) tmp[std::string(a.name)] = a;
+					bool flag = 0;
+					for (auto updexpr: upd)
+					{
+						if (!tmp.count(std::string(updexpr->column))) {cout << "ERROR: No column " << updexpr->column << "." << endl; flag = 1; break;}
+						auto &col = tmp[std::string(updexpr->column)];
+						if (col.type == SimpleDataBase::Area::INT_T)
+						{
+							auto tr = SimpleDataBase::translateInt(*updexpr->value, cols);
+							if (!tr) {cout << "ERROR: Translation failed in expr for update column " << updexpr->column << "." << endl; flag = 1; break;}
+							unsigned short o1 = col.offset;
+							cvtupd.push_back([o1, tr](void *ptr){
+								char* t = (char*)ptr;
+								auto grab = tr->operator()(ptr);
+								if (grab)
+								{
+									t[o1] = 0;
+									memcpy(t + o1 + 1, grab.get(), 4);
+									return 1;
+								}
+								else {t[o1] = 1; return 1;}
+							});
+						}
+						else if (col.type == SimpleDataBase::Area::VARCHAR_T)
+						{
+							auto tr = SimpleDataBase::translateString(*updexpr->value, cols);
+							if (!tr) {cout << "ERROR: Translation failed in expr for update column " << updexpr->column << "." << endl; flag = 1; break;}
+							unsigned short o1 = col.offset;
+							unsigned short l1 = col.len;
+							cvtupd.push_back([o1, l1, tr](void *ptr){
+								char* t = (char*)ptr;
+								auto grab = tr->operator()(ptr);
+								if (grab)
+								{
+									if (grab->length() <= l1)
+									{
+										char buf[l1 + 1];
+										memset(buf, 0, sizeof(buf));
+										strcpy(buf, grab->c_str());
+										t[o1] = 0;
+										memcpy(t + o1 + 1, buf, l1);
+										return 1;
+									}
+									else return 0;
+								}
+								else
+								{
+									t[o1] = 1;
+									return 1;
+								}
+							});
+						}
+					}
+					if (flag) {cout << "ERROR Occured. Update Failed." << endl; break;}
+					auto res = sys.updateRecord(tablename, *tr, [cvtupd](void const* ptr){
+						std::vector <char> data;
+						ushort totlen;
+						memcpy(&totlen, ptr, 2);
+						data.resize(totlen);
+						memcpy(&data[0], ptr, totlen);
+
+						//for (auto i: data) cout << int(i) << endl;
+						
+						bool flag = 0;
+						for (auto const& upd: cvtupd) if (!upd(&data[0])) {flag = 1; break;};
+
+						//for (auto i: data) cout << int(i) << endl;
+
+						if (flag) return std::vector<char>(); else return data;
+					});
+					cout << res.first << " out of " << res.first + res.second << " update succeeded." << endl;
+				}
 				break;
 			}
 		} else cout << "Invalid." << endl;

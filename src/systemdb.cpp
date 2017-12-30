@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
+#include <cstring>
 
 namespace	SimpleDataBase
 {
@@ -195,6 +196,26 @@ int	SystemDB::deleteRecord(std::string const& name, std::function <bool(void con
 	for (auto const& pos: recordManager->select(fid, cond)) recordManager->remove(fid, pos), cnt++;
 	recordManager->closeFile(fid);
 	return cnt;
+}
+
+std::pair<int, int>	SystemDB::updateRecord(std::string const& name, std::function<bool(void const*)> const& cond, std::function< std::vector<char>(void const*) > const& upd)
+{
+	if (current_db == SYSTEM_DB_NAME || !current_db.length() || !name.length()) return std::make_pair(0, 0);
+	int fid = recordManager->openFile(getTableFile(name));
+	int cnt1 = 0, cnt2 = 0;
+	for (auto const& pos: recordManager->select(fid, cond))
+	{
+		void*	ptr = recordManager->getptr(fid, pos);
+		auto newdat = upd(ptr);
+		if (newdat.size())
+		{
+			recordManager->remove(fid, pos);
+			recordManager->insert(fid, &newdat[0]);
+			cnt1++;
+		}	else cnt2++;
+	}
+	recordManager->closeFile(fid);
+	return std::make_pair(cnt1, cnt2);
 }
 
 }	// end namespace SimpleDataBase

@@ -37,6 +37,9 @@ public:
 
 	bool	insertRecord(std::string const& name, std::vector < std::vector<char> > const& chardata);
 	int	deleteRecord(std::string const& tablename, std::function <bool(void const*)> const& cond);
+	std::pair<int, int>	updateRecord(std::string const& name,
+			std::function< bool(void const*)> const& cond,
+			std::function< std::vector<char>(void const*) > const& upd);
 
 private:
 	SystemDB();
