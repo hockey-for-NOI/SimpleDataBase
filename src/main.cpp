@@ -6,6 +6,7 @@
 
 #include "SQLParser.h"
 #include <map>
+#include <iomanip>
 
 using	namespace	std;
 
@@ -193,9 +194,65 @@ int	main()
 					auto tablename = std::string(dstmt->tableName);
 					if (!sys.hasTable(tablename)) {cout << "ERROR: No such table." << endl; break;}
 					auto cols = sys.getTableCols(tablename);
-					auto tr = SimpleDataBase::translateCond(*dstmt->expr, cols);
+					auto tr = SimpleDataBase::translateCond(dstmt->expr, cols);
 					if (!tr) {cout << "Condition ERROR." << endl; break;}
 					cout << sys.deleteRecord(tablename, *tr) << " Item(s) Deleted." << endl;
+				}
+				break;
+				case hsql::kStmtSelect:
+				{
+					auto &sys = SimpleDataBase::SystemDB::get_instance();
+					if (!sys.getCurrentDB().length()) {cout << "ERROR: No current DB." << endl; break;}
+					auto sstmt = dynamic_cast<hsql::SelectStatement*>(stmt);
+					if (sstmt->fromTable->type == hsql::kTableName)
+					{
+						auto tablename = std::string(sstmt->fromTable->name);
+						if (!sys.hasTable(tablename)) {cout << "ERROR: No such table." << endl; break;}
+						auto cols = sys.getTableCols(tablename);
+						std::map < std::string, SimpleDataBase::Area > tmp;
+						for (auto const& a: cols) tmp[std::string(a.name)] = a;
+						auto tr = SimpleDataBase::translateCond(sstmt->whereClause, cols);
+						if (!tr) {cout << "Condition ERROR." << endl; break;}
+						bool flag = 0;
+						std::vector <SimpleDataBase::Area> toselect;
+						for (auto field: *sstmt->selectList)
+						{
+							switch (field->type)
+							{
+								case hsql::kExprStar:
+									toselect = cols;
+								break;
+								case hsql::kExprColumnRef:
+									if (!tmp.count(std::string(field->name))) {flag = 1; break;}
+									toselect.push_back(tmp[std::string(field->name)]);
+								break;
+							}
+						}
+						if (flag) {cout << "Select Field ERROR." << endl; break;}
+						auto res = sys.selectRecord(tablename, *tr); 
+						for (auto const& obj: res)
+						{
+							for (auto const& pr: toselect)
+							{
+								if (pr.type == SimpleDataBase::Area::INT_T)
+								{
+									if (obj[pr.offset]) {cout << setw(pr.pad) << "NULL"; continue;}
+									int	x;
+									memcpy(&x, &obj[pr.offset + 1], 4);
+									cout << setw(pr.pad) << x;
+								}
+								else
+								{
+									if (obj[pr.offset]) {cout << "NULL"; continue;}
+									char buf[pr.len + 1];
+									memset(buf, 0, sizeof(buf));
+									memcpy(&buf, &obj[pr.offset + 1], pr.len);
+									cout << buf;
+								}
+							}
+							cout << endl;
+						}
+					}
 				}
 				break;
 				case hsql::kStmtUpdate:
@@ -206,7 +263,7 @@ int	main()
 					auto tablename = std::string(ustmt->table->name);
 					if (!sys.hasTable(tablename)) {cout << "ERROR: No such table." << endl; break;}
 					auto cols = sys.getTableCols(tablename);
-					auto tr = SimpleDataBase::translateCond(*ustmt->where, cols);
+					auto tr = SimpleDataBase::translateCond(ustmt->where, cols);
 					if (!tr) {cout << "Condition ERROR." << endl; break;}
 					auto &upd = *ustmt->updates;
 					std::vector < std::function< bool(void*) > > cvtupd;

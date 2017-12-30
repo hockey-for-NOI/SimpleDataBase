@@ -218,4 +218,22 @@ std::pair<int, int>	SystemDB::updateRecord(std::string const& name, std::functio
 	return std::make_pair(cnt1, cnt2);
 }
 
+std::vector < std::vector <char> >	SystemDB::selectRecord(std::string const& name, std::function<bool(void const*)> const& cond)
+{
+	std::vector < std::vector <char> > res;
+	if (current_db == SYSTEM_DB_NAME || !current_db.length() || !name.length()) return res;
+	int fid = recordManager->openFile(getTableFile(name));
+	for (auto const& pos: recordManager->select(fid, cond))
+	{
+		void*	ptr = recordManager->getptr(fid, pos);
+		unsigned short len;
+		memcpy(&len, ptr, 2);
+		std::vector <char> tmp(len);
+		memcpy(&tmp[0], ptr, len);
+		res.push_back(tmp);
+	}
+	recordManager->closeFile(fid);
+	return res;
+}
+
 }	// end namespace SimpleDataBase

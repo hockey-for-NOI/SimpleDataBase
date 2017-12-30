@@ -41,6 +41,9 @@ public:
 			std::function< bool(void const*)> const& cond,
 			std::function< std::vector<char>(void const*) > const& upd);
 
+	std::vector < std::vector <char> >	selectRecord(std::string const& name,
+			std::function<bool(void const*)> const& cond);
+
 private:
 	SystemDB();
 

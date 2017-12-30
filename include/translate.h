@@ -20,6 +20,12 @@ inline	std::shared_ptr<std::function<bool(void const*)> >	translateCond(hsql::Ex
 	return translateCond(expr, tmp);
 }
 
+inline	std::shared_ptr<std::function<bool(void const*)> >	translateCond(hsql::Expr const* expr, std::vector<Area> const& area)
+{
+	if (expr) return translateCond(*expr, area);
+	else return std::make_shared< std::function<bool(void const*)> > ([](void const*) {return true;});
+}
+
 std::shared_ptr<std::function<std::shared_ptr<int>(void const*)> >	translateInt(hsql::Expr const& expr, std::map<std::string, Area> & area);
 
 inline	std::shared_ptr<std::function<std::shared_ptr<int>(void const*)> >	translateInt(hsql::Expr const& expr, std::vector<Area> const& area)
