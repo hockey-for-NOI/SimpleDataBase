@@ -1,8 +1,32 @@
 #pragma once
 #include "recordman.h"
+#include <cstring>
 
 namespace SimpleDataBase
 {
+
+struct	NaiveIntIndex
+{
+	unsigned short	size, key[3], pos[3];
+	inline	NaiveIntIndex(RecordPos const& _key, RecordPos const& _pos)
+	{
+		size = 14;
+		memcpy(key, &_key, 6);
+		memcpy(pos, &_pos, 6);
+	}
+	inline	RecordPos	getkey() const
+	{
+		RecordPos _key;
+		memcpy(&_key, key, 6);
+		return _key;
+	}
+	inline	RecordPos	getpos() const
+	{
+		RecordPos _pos;
+		memcpy(&_pos, pos, 6);
+		return _pos;
+	}
+};
 
 class	IndexManager : protected RecordManager
 {

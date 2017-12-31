@@ -172,29 +172,139 @@ bool	SystemDB::createTable(std::string const& name, std::vector<Area> const& are
 		recordManager->closeFile(fid);
 		return 0;
 	}
+	flag = 0;
 	for (auto const& area: areas)
+	{
 		recordManager->ins<Area>(fid, area);
+		if (area.primary) flag = 1;
+	}
 	recordManager->closeFile(fid);
 	recordManager->createFile(getTableFile(name));
+	if (flag) indexManager->createIndex(getIndexFile(name));
 	return 1;
 }
 
 bool	SystemDB::insertRecord(std::string const& name, std::vector < std::vector <char> > const& data)
 {
 	if (current_db == SYSTEM_DB_NAME || !current_db.length() || !name.length()) return 0;
-	int fid = recordManager->openFile(getTableFile(name));
-	for (auto const& dat: data) recordManager->insert(fid, &dat[0]);
+	int fid = recordManager->openFile(getSysTable());
+	bool	hasprim = 0;
+	Area	prim;
+	for (auto const& i: recordManager->select<Area>(fid, [&name](Area const& area){return name == area.table;}))
+	{
+		prim = recordManager->get<Area>(fid, i);
+		if (prim.primary) {hasprim = 1; break;}
+	}
 	recordManager->closeFile(fid);
+	if (hasprim)
+	{
+		fid = indexManager->openIndex(getIndexFile(name));
+		bool errflag = 0;
+		for (auto const& dat: data)
+		{
+			if (dat[prim.offset]) {errflag = 1; break;}
+			RecordPos key;
+			if (prim.type == Area::INT_T)
+			{
+				int x;
+				memcpy(&x, &dat[prim.offset + 1], 4);
+				key.pageID = x; key.slotID = 0;
+			}
+			if (prim.type == Area::VARCHAR_T)
+			{
+				char tmp[prim.len + 1];
+				memcpy(tmp, &dat[prim.offset + 1], prim.len);
+				tmp[prim.len] = 0;
+				key.pageID = std::hash<string>()(std::string(tmp));
+				key.slotID = 0;
+			}
+			if (indexManager->get<int>(fid, key, [](void const*){return 1;}).size()) {errflag = 1; break;}
+		}
+		indexManager->closeIndex(fid);
+		if (errflag) return 0;
+	}
+	std::vector <RecordPos> ps;
+	fid = recordManager->openFile(getTableFile(name));
+	for (auto const& dat: data) ps.push_back(recordManager->insert(fid, &dat[0]));
+	recordManager->closeFile(fid);
+	if (hasprim)
+	{
+		fid = indexManager->openIndex(getIndexFile(name));
+		for (int id=0; id<data.size(); id++)
+		{
+			auto const& dat = data[id];
+			auto const& pos = ps[id];
+			RecordPos key;
+			if (prim.type == Area::INT_T)
+			{
+				int x;
+				memcpy(&x, &dat[prim.offset + 1], 4);
+				key.pageID = x; key.slotID = 0;
+			}
+			if (prim.type == Area::VARCHAR_T)
+			{
+				char tmp[prim.len + 1];
+				memcpy(tmp, &dat[prim.offset + 1], prim.len);
+				tmp[prim.len] = 0;
+				key.pageID = std::hash<string>()(std::string(tmp));
+				key.slotID = 0;
+			}
+			indexManager->ins<NaiveIntIndex>(fid, NaiveIntIndex(key, pos));
+		}
+		indexManager->closeIndex(fid);
+	}
 	return 1;
 }
 
 int	SystemDB::deleteRecord(std::string const& name, std::function <bool(void const*)> const& cond)
 {
 	if (current_db == SYSTEM_DB_NAME || !current_db.length() || !name.length()) return 0;
-	int fid = recordManager->openFile(getTableFile(name));
-	int cnt = 0;
-	for (auto const& pos: recordManager->select(fid, cond)) recordManager->remove(fid, pos), cnt++;
+	int fid = recordManager->openFile(getSysTable());
+	bool	hasprim = 0;
+	Area	prim;
+	for (auto const& i: recordManager->select<Area>(fid, [&name](Area const& area){return name == area.table;}))
+	{
+		prim = recordManager->get<Area>(fid, i);
+		if (prim.primary) {hasprim = 1; break;}
+	}
 	recordManager->closeFile(fid);
+	fid = recordManager->openFile(getTableFile(name));
+	int cnt = 0;
+	std::vector <NaiveIntIndex> toremove;
+	for (auto const& pos: recordManager->select(fid, cond))
+	{
+		char const* dat = (char const*)(recordManager->getptr(fid, pos));
+		if (hasprim)
+		{
+			RecordPos key;
+			if (prim.type == Area::INT_T)
+			{
+				int x;
+				memcpy(&x, dat + prim.offset + 1, 4);
+				key.pageID = x; key.slotID = 0;
+			}
+			if (prim.type == Area::VARCHAR_T)
+			{
+				char tmp[prim.len + 1];
+				memcpy(tmp, dat + prim.offset + 1, prim.len);
+				tmp[prim.len] = 0;
+				key.pageID = std::hash<string>()(std::string(tmp));
+				key.slotID = 0;
+			}
+			toremove.emplace_back(key, pos);
+		}
+		recordManager->remove(fid, pos), cnt++;
+	}
+	recordManager->closeFile(fid);
+	if (hasprim)
+	{
+		fid = indexManager->openIndex(getIndexFile(name));
+		for (auto const& i: toremove)
+			indexManager->remove(fid, i.getkey(), [i](void const* ptr){
+				return memcmp(ptr, &i, sizeof(NaiveIntIndex)) == 0;
+			});
+		indexManager->closeIndex(fid);
+	}
 	return cnt;
 }
 
@@ -203,18 +313,16 @@ std::pair<int, int>	SystemDB::updateRecord(std::string const& name, std::functio
 	if (current_db == SYSTEM_DB_NAME || !current_db.length() || !name.length()) return std::make_pair(0, 0);
 	int fid = recordManager->openFile(getTableFile(name));
 	int cnt1 = 0, cnt2 = 0;
+	std::vector < std::vector <char> > newdats;
 	for (auto const& pos: recordManager->select(fid, cond))
 	{
 		void*	ptr = recordManager->getptr(fid, pos);
 		auto newdat = upd(ptr);
-		if (newdat.size())
-		{
-			recordManager->remove(fid, pos);
-			recordManager->insert(fid, &newdat[0]);
-			cnt1++;
-		}	else cnt2++;
+		if (newdat.size()) newdats.push_back(newdat); else cnt2++;
 	}
 	recordManager->closeFile(fid);
+	cnt1 = deleteRecord(name, cond);
+	if (!insertRecord(name, newdats)) {cnt2 += cnt1; cnt1 = 0;}
 	return std::make_pair(cnt1, cnt2);
 }
 
