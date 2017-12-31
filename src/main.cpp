@@ -183,7 +183,7 @@ int	main()
 					}
 					if (flag) {cout << "ERROR Occured. Insert Failed." << endl; break;}
 //					for (auto const& i: chardata) for (auto const& j: i) cout << int(j) << endl;
-					sys.insertRecord(tablename, chardata);
+					if (!sys.insertRecord(tablename, chardata)) {cout << "ERROR Occured. Insert Failed." << endl; break;}
 				}
 				break;
 				case hsql::kStmtDelete:

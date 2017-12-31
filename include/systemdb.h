@@ -21,6 +21,7 @@ public:
 
 	inline	std::string	getCurrentDir() {return DEFAULT_ROOT_DIR + "/" + current_db;}
 	inline	std::string getTableFile(std::string table) {return getCurrentDir() + "/" + table;}
+	inline	std::string getIndexFile(std::string table) {return getCurrentDir() + "/" + table + ".idx";}
 	inline	std::string getSysTable() {return DEFAULT_ROOT_DIR + "/" + SYSTEM_DB_NAME + "/" + current_db;}
 	inline	std::string getCurrentDB() {return current_db;}
 
