@@ -6,6 +6,7 @@ namespace	SimpleDataBase
 
 struct	Area
 {
+	static	const	int	RESERVED_T = 0;
 	static	const	int	INT_T = 1;
 	static	const	int	VARCHAR_T = 2;
 	static	const	int FLOAT_T = 3;

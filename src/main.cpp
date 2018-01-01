@@ -3,6 +3,7 @@
 #include <cstring>
 #include "systemdb.h"
 #include "translate.h"
+#include "check.h"
 
 #include "SQLParser.h"
 #include <map>
@@ -253,6 +254,61 @@ int	main()
 							cout << endl;
 						}
 					}
+					else if (sstmt->fromTable->type == hsql::kTableCrossProduct)
+					{
+						std::vector <SimpleDataBase::Area> cols;
+						std::map < std::string, std::vector < std::vector <char> > > bases;
+						std::map < std::string, std::map < std::string, SimpleDataBase::Area > > tmp;
+						for (auto const& i: cols) tmp[i.table][i.name] = i;
+						for (auto i: *sstmt->fromTable->list)
+						{
+							std::string tname = i->name;
+							auto tcols = sys.getTableCols(tname);
+							for (auto const& t: tcols) cols.push_back(t);
+							bases[tname] = sys.selectRecord(tname, [](void const*) {return 1;});
+						}
+						std::vector <SimpleDataBase::Area> toselect;
+						bool flag = 0;
+						for (auto field: *sstmt->selectList)
+						{
+							switch (field->type)
+							{
+								case hsql::kExprStar:
+									toselect = cols;
+								break;
+								case hsql::kExprColumnRef:
+									if (!tmp.count(field->table)) {flag = 1; break;}
+									if (!tmp[field->table].count(field->name)) {flag = 1; break;}
+									toselect.push_back(tmp[field->table][field->name]);
+								break;
+							}
+						}
+						if (flag) {cout << "Select Field ERROR." << endl; break;}
+						auto disp = [toselect](std::map<std::string, std::vector<char> > &obj){
+							for (auto const& pr: toselect)
+							{
+								auto const& obj1 = obj[pr.table];
+								if (pr.type == SimpleDataBase::Area::INT_T)
+								{
+									if (obj1[pr.offset]) {cout << setw(pr.pad) << "NULL"; continue;}
+									int	x;
+									memcpy(&x, &obj1[pr.offset + 1], 4);
+									cout << setw(pr.pad) << x;
+								}
+								else
+								{
+									if (obj1[pr.offset]) {cout << "NULL"; continue;}
+									char buf[pr.len + 1];
+									memset(buf, 0, sizeof(buf));
+									memcpy(&buf, &obj1[pr.offset + 1], pr.len);
+									cout << buf;
+								}
+							}
+							cout << endl;
+						};
+						checkIterate(sstmt->whereClause, bases, tmp, disp);
+					}
+					else cout << "Unimplemented select type." << endl;
 				}
 				break;
 				case hsql::kStmtUpdate:
