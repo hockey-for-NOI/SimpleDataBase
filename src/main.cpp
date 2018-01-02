@@ -240,7 +240,7 @@ int	main()
 									if (obj[pr.offset]) {cout << setw(pr.pad) << "NULL"; continue;}
 									int	x;
 									memcpy(&x, &obj[pr.offset + 1], 4);
-									cout << setw(pr.pad) << x;
+									cout << setw(pr.pad) << x << ",";
 								}
 								else
 								{
@@ -248,7 +248,7 @@ int	main()
 									char buf[pr.len + 1];
 									memset(buf, 0, sizeof(buf));
 									memcpy(&buf, &obj[pr.offset + 1], pr.len);
-									cout << buf;
+									cout << buf << ",";
 								}
 							}
 							cout << endl;
@@ -293,7 +293,7 @@ int	main()
 									if (obj1[pr.offset]) {cout << setw(pr.pad) << "NULL"; continue;}
 									int	x;
 									memcpy(&x, &obj1[pr.offset + 1], 4);
-									cout << setw(pr.pad) << x;
+									cout << setw(pr.pad) << x << ",";
 								}
 								else
 								{
@@ -301,7 +301,7 @@ int	main()
 									char buf[pr.len + 1];
 									memset(buf, 0, sizeof(buf));
 									memcpy(&buf, &obj1[pr.offset + 1], pr.len);
-									cout << buf;
+									cout << buf << ",";
 								}
 							}
 							cout << endl;
