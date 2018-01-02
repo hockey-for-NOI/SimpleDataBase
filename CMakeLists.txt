@@ -28,6 +28,8 @@ list(APPEND SRC_LIST src/index_getobj.cpp)
 list(APPEND SRC_LIST src/area.cpp)
 list(APPEND SRC_LIST src/systemdb.cpp)
 list(APPEND SRC_LIST src/translate.cpp)
+list(APPEND SRC_LIST src/checkcond.cpp)
+list(APPEND SRC_LIST src/checkiterate.cpp)
 
 #add_executable(testfilesystem ${SRC_LIST} unittests/testfilesystem.cpp)
 
