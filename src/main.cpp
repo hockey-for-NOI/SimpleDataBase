@@ -259,7 +259,6 @@ int	main()
 						std::vector <SimpleDataBase::Area> cols;
 						std::map < std::string, std::vector < std::vector <char> > > bases;
 						std::map < std::string, std::map < std::string, SimpleDataBase::Area > > tmp;
-						for (auto const& i: cols) tmp[i.table][i.name] = i;
 						for (auto i: *sstmt->fromTable->list)
 						{
 							std::string tname = i->name;
@@ -267,6 +266,7 @@ int	main()
 							for (auto const& t: tcols) cols.push_back(t);
 							bases[tname] = sys.selectRecord(tname, [](void const*) {return 1;});
 						}
+						for (auto const& i: cols) tmp[i.table][i.name] = i;
 						std::vector <SimpleDataBase::Area> toselect;
 						bool flag = 0;
 						for (auto field: *sstmt->selectList)

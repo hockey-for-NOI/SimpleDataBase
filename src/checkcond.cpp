@@ -141,11 +141,11 @@ int	checkCond(hsql::Expr const& expr, std::map <std::string, std::map<std::strin
 			}
 			if (expr.op_type == hsql::Expr::SIMPLE_OP && expr.op_char == '<')
 			{
-				return lt == Area::INT_T ? li < ri : ls < rs;
+				return lt == Area::INT_T ? li < ri : -1;
 			}
 			if (expr.op_type == hsql::Expr::SIMPLE_OP && expr.op_char == '>')
 			{
-				return lt == Area::INT_T ? li > ri : ls > rs;
+				return lt == Area::INT_T ? li > ri : -1;
 			}
 			if (expr.op_type == hsql::Expr::NOT_EQUALS)
 			{
@@ -153,11 +153,11 @@ int	checkCond(hsql::Expr const& expr, std::map <std::string, std::map<std::strin
 			}
 			if (expr.op_type == hsql::Expr::LESS_EQ)
 			{
-				return lt == Area::INT_T ? li <= ri : ls <= rs;
+				return lt == Area::INT_T ? li <= ri : -1;
 			}
 			if (expr.op_type == hsql::Expr::GREATER_EQ)
 			{
-				return lt == Area::INT_T ? li >= ri : ls >= rs;
+				return lt == Area::INT_T ? li >= ri : -1;
 			}
 			return -1;
 		}
