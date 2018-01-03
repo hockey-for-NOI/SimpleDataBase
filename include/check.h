@@ -11,6 +11,12 @@
 namespace	SimpleDataBase
 {
 
+std::shared_ptr <int>	checkInt(hsql::Expr const& expr, std::map <std::string, std::map<std::string, Area> > &area,
+		std::map < std::string, std::vector <char> > & obj);
+
+std::shared_ptr <std::string>	checkString(hsql::Expr const& expr, std::map <std::string, std::map<std::string, Area> > &area,
+		std::map < std::string, std::vector <char> > & obj);
+
 int	checkCond(hsql::Expr const& expr, std::map <std::string, std::map<std::string, Area> > & area, 
 		std::map < std::string, std::vector <char> > & obj);
 
