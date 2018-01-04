@@ -284,7 +284,7 @@ int	main()
 							}
 						}
 						if (flag) {cout << "Select Field ERROR." << endl; break;}
-						auto disp = [toselect](std::map<std::string, std::vector<char> > &obj){
+						auto disp = [toselect](std::map<std::string, char* > &obj){
 							for (auto const& pr: toselect)
 							{
 								auto const& obj1 = obj[pr.table];

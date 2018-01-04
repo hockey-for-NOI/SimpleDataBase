@@ -8,7 +8,7 @@ namespace	SimpleDataBase
 {
 
 std::shared_ptr <std::string> checkString(hsql::Expr const& expr, std::map <std::string, std::map<std::string, Area> > & area, 
-		std::map < std::string, std::vector <char> > & obj)
+		std::map < std::string, char* > & obj)
 {
 	if (expr.type == hsql::kExprColumnRef)
 	{
@@ -65,7 +65,7 @@ std::shared_ptr <std::string> checkString(hsql::Expr const& expr, std::map <std:
 }
 
 std::shared_ptr <int> checkInt(hsql::Expr const& expr, std::map <std::string, std::map<std::string, Area> > & area, 
-		std::map < std::string, std::vector <char> > & obj)
+		std::map < std::string, char* > & obj)
 {
 	if (expr.type == hsql::kExprColumnRef)
 	{
@@ -134,7 +134,7 @@ std::shared_ptr <int> checkInt(hsql::Expr const& expr, std::map <std::string, st
 }
 
 int	checkCond(hsql::Expr const& expr, std::map <std::string, std::map<std::string, Area> > & area, 
-		std::map < std::string, std::vector <char> > & obj)
+		std::map < std::string, char* > & obj)
 {
 
 	if (expr.type != hsql::kExprOperator) {return -1;}
