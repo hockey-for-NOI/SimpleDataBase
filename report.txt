@@ -39,7 +39,8 @@
 	基础功能见docs/
 	多表查询功能暴力实现，其实不算附加功能，在checkIterate中实现(手动栈)
 【实验结果】
-	未实现附加类型，故orders表和price表无法定义
+	未实现附加类型，故orders表和price表无法定义。
+	实验开始前请确认/data/db文件目录的访问权限，若不存在该目录，请修改src/systemdb.cpp的DEFAULT_ROOT_DIR为可访问的目录后重新编译。
 	数据库级操作正常。注意：USE dbName改为USE DATABASE dbName(外部paser原因)。
 	表级操作正常。注意：交互式窗口以回车为界，请合并为一行后输入。
 	记录级操作：
