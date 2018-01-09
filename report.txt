@@ -1,0 +1,62 @@
+	数据库项目报告文档
+【系统结构设计】
+	主要记录存储：RecordManager
+	辅助加速索引：IndexManager
+	列存储：Area
+	文件管理：SystemDB
+	通常查询：Translate
+	连接查询：Check
+	用户界面：main.cpp
+【系统功能】
+	数据库级：
+		启动时在/data/db下创建system文件夹，包含系统数据库。
+		CREATE DATABASE dbName
+			在/data/db/下创建对应名称的文件夹，并在system数据库下创建同名table记录所有信息。
+		DROP DATABASE dbName
+			在/data/db/下移除对应的文件夹和system文件夹下的同名table
+		USE DATABASE dbName
+			将当前数据库切换为dbName（纯内存操作，不改变硬盘）
+		SHOW DATABASES
+			显示所有数据库（实现时显示的是system数据库下的所有表）
+	表级：
+		CREATE TABLE tablename(columns)
+			在当前数据库创建表文件，并在system数据库的当前数据库名的表内插入columns信息
+			若存在主键，创建.idx索引文件
+		DROP TABLE name
+			在当前数据库移除表文件，并在system数据库的当前数据库名的表内移除columns信息
+	记录级：
+		INSERT INTO tablename values (col1, col2 ...), (col1, col2 ...), ...
+			插入数据，若存在主键，同时插入索引项
+		DELETE FROM tablename where boolExpr
+			移除数据，调用translate翻译条件，若存在主键，同时删除索引项
+		UPDATE tablename SET col = value where boolExpr
+			更改数据，编译为先DELETE后INSERT
+		SELECT * / col1, col2, ... from table where boolExpr
+			单表查询，列名（包括boolExpr引用的列）前无需指出表名
+		SELECT * / table1.col1, table2.col2, table3.col3, ... from tabl1, table2, table3, ... where boolExpr
+			多表链接，列名（包括boolExpr引用的列）前必须指出表名，SELECT * 情况下顺序可能会乱(外部parser顺序问题)，效率较低
+【主要模块设计原理】
+	基础功能见docs/
+	多表查询功能暴力实现，其实不算附加功能，在checkIterate中实现(手动栈)
+【实验结果】
+	未实现附加类型，故orders表和price表无法定义
+	数据库级操作正常。注意：USE dbName改为USE DATABASE dbName(外部paser原因)。
+	表级操作正常。注意：交互式窗口以回车为界，请合并为一行后输入。
+	记录级操作：
+	INSERT操作由于外部parser不支持'`'记号，需要删除所有的'`'记号。
+	INSERT操作由于太长必须运用文件操作，而每次启动时默认db为空，故需要在INSERT的sql文件最前面加一句USE DATABASE orderDB;之后调用./SimpleDataBase < 输入sql文件即可，正常情况下会出现一个Invalid是由于EOF导致最后一句空命令被parser拒绝。
+	4M数据可以瞬间插入完成。
+	插入多个值其中存在主键冲突时，所有的值都不会被插入。
+	DELETE操作同样不支持'`'记号。where条件内支持<=,>=,=等常见逻辑，and,or等常见逻辑运算，+-*/等数学运算。
+	UPDATE操作的条件部分与DELETE操作类似。需要注意的是，若更新后记录出现主键冲突，则这条记录会被删除。
+	单表select操作条件部分与DELETE类似。
+	多表select操作条件部分必须带表名，大表连接效率较低。
+	select * from book, website where book.id = website.id + 300000 可以较快出解
+	select * from customer, website where customer.id = website.id + 200000 可以较快出解
+	select * from customer, book where customer.id = book.id - 100000 会不断弹出新链接到的记录，但无法很快完成链接。
+	三表链接效率更慢，仅理论可行。
+【小组分工】
+	我曾经有一个队友。
+【参考文献】
+	Parser: https://github.com/hyrise/sql-parser
+	本项目github地址：git@github.com:hockey-for-NOI/SimpleDataBase.git
